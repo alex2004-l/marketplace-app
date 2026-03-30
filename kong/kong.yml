@@ -1,0 +1,18 @@
+_format_version: "2.1"
+
+services:
+  - name: market-service
+    url: http://market-service:8080
+    routes:
+      - name: market-service-route
+        paths:
+          - /api/market
+        strip_path: false
+
+  - name: user-service
+    url: http://user-service:8080
+    routes:
+      - name: user-service-route
+        paths:
+          - /api/user
+        strip_path: false
