@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.0.2 - 2026-04-03
+
+### @daria-tanasie
+
+### Added
+
+- Add a product in DB functionality
+- See all products from DB functionality
+- Get product by id
+- Search a product by name 
+- Delete a product by id for testing
+- Change address for a user logic in io-service
+
 ## 0.0.1 - 2026-03-30
 
 ### @daria-tanasie

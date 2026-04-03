@@ -33,8 +33,8 @@ services:
   marketdb:
     image: postgres:16.2
     environment:
-      POSTGRES_DB: market_db
-      POSTGRES_USER: market_db
+      POSTGRES_DB: marketdb
+      POSTGRES_USER: marketdb
       POSTGRES_PASSWORD: market123
     volumes:
       - marketdb_data:/var/lib/postgresql/data
@@ -78,6 +78,8 @@ services:
     environment:
       - DB_HOSTNAME=marketdb
       - DB_PASS=market123
+      - DB_URL=jdbc:postgresql://marketdb:5432/marketdb
+      - DB_USER=marketdb
     networks:
       - database_net
       - backend_net
