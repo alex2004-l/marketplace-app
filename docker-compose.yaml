@@ -52,6 +52,7 @@ services:
       - keycloakdb_data:/var/lib/postgresql/data
     networks:
       - keycloak_net
+      - adminer_db_net
   
   keycloak:
     image: quay.io/keycloak/keycloak:25.0.5
@@ -78,6 +79,7 @@ services:
       - keycloakdb
     networks:
       - internal_net
+      - keycloak_net
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080; echo -e 'GET /realms/master HTTP/1.1\r\nHost: localhost:8080\r\nConnection: close\r\n\r\n' >&3; cat <&3 | grep '200 OK'"]
       interval: 10s
@@ -112,6 +114,8 @@ services:
     networks:
       - internal_net
       - backend_net
+      - database_net
+      - keycloak_net
 
   market-service:
     image: market_service_image
@@ -121,6 +125,7 @@ services:
     networks:
       - internal_net
       - backend_net
+      - database_net
 
   io-service:
     image: io_service_image

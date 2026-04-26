@@ -1,5 +1,6 @@
 package com.example.userservice.config;
 import com.example.userservice.model.Role;
+import com.example.userservice.repository.UserRepository;
 import com.example.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,7 @@ public class JwtConverter implements Converter<Jwt, AbstractAuthenticationToken>
     private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter =
             new JwtGrantedAuthoritiesConverter();
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @Value("${jwt.auth.converter.principle-attribute}")
     private String principleAttribute;
@@ -44,28 +46,27 @@ public class JwtConverter implements Converter<Jwt, AbstractAuthenticationToken>
         String username = jwt.getClaimAsString("preferred_username");
 
         Collection<GrantedAuthority> resourceRoles = extractResourceRoles(jwt);
+        Stream<? extends GrantedAuthority> authorities = resourceRoles.stream();
+        String syncRole;
 
-        // ?
         if (!resourceRoles.isEmpty()) {
-            userService.addUser(identity, username, email, firstName, lastName, Role.ADMIN.name());
+            boolean isKeycloakAdmin = resourceRoles.stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_client_admin"));
 
-            return new JwtAuthenticationToken(
-                    jwt,
-                    Stream.concat(jwtGrantedAuthoritiesConverter.convert(jwt).stream(), resourceRoles.stream())
-                            .collect(Collectors.toSet()),
-                    identity
-            );
+            syncRole = isKeycloakAdmin ? Role.ADMIN.name() : Role.USER.name();
         } else {
-            userService.addUser(identity, username, email, firstName, lastName, Role.USER.name());
-            Collection<? extends GrantedAuthority> dbAuthorities = userService.setRoles(identity);
-
-            return new JwtAuthenticationToken(
-                    jwt,
-                    Stream.concat(jwtGrantedAuthoritiesConverter.convert(jwt).stream(), dbAuthorities.stream())
-                            .collect(Collectors.toSet()),
-                    identity
-            );
+            syncRole = Role.USER.name();
+            authorities = userService.setRoles(identity).stream();
         }
+
+        userService.addUser(identity, username, email, firstName, lastName, syncRole);
+
+        return new JwtAuthenticationToken(
+                jwt,
+                Stream.concat(jwtGrantedAuthoritiesConverter.convert(jwt).stream(), authorities)
+                        .collect(Collectors.toSet()),
+                identity
+        );
 
     }
 

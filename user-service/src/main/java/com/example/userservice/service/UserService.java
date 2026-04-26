@@ -30,7 +30,6 @@ public class UserService {
         }
 
         Role mappedRole = (role != null && role.toUpperCase().contains("ADMIN")) ? Role.ADMIN : Role.USER;
-
         UserModel userModel = UserModel.builder()
                         .keycloakId(keycloakId)
                         .email(email)
