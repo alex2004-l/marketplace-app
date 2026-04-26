@@ -8,8 +8,9 @@
 
 - Integrated Keycloak server
 - Developed a custom JWT Authenticator converter
-- Implement log-in functionality for user-service
-- Integrated Portainer
+- Implement log in functionality in user-service
+- Added Portainer to docker-compose 
+- Added CI/CD pipeline for automated builds and image deployment
 
 ## 0.0.2 - 2026-04-03
 

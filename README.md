@@ -3,9 +3,11 @@
 
 ## App description
 
-Team members:
-- 
-- 
+A microservices-driven Marketplace application built with Spring Boot and Docker.
+
+#### Team members:
+- Daria Tănasie 342C1 - @daria-tanasie
+- Lache Alexandra 342C1 - @alex2004-l
 
 
 ## Build
