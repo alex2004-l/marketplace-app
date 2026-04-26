@@ -41,6 +41,51 @@ services:
     networks:
       - database_net
       - adminer_db_net
+    
+  keycloakdb:
+    image: postgres:16.2
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - keycloakdb_data:/var/lib/postgresql/data
+    networks:
+      - keycloak_net
+      - adminer_db_net
+  
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.5
+    ports:
+      - target: 8080
+        published: 9090
+        mode: host
+    command:
+      - start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloakdb:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 9090
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
+      KC_HTTP_ENABLED: 'true'
+      KC_HOSTNAME_STRICT_HTTPS: 'false'
+      KC_HEALTH_ENABLED: 'true'
+    depends_on:
+      - keycloakdb
+    networks:
+      - internal_net
+      - keycloak_net
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080; echo -e 'GET /realms/master HTTP/1.1\r\nHost: localhost:8080\r\nConnection: close\r\n\r\n' >&3; cat <&3 | grep '200 OK'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   adminer:
     image: adminer
@@ -51,15 +96,45 @@ services:
     networks:
       - adminer_db_net
       - internal_net
+  
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer_data:/data
+    ports:
+      - target: 9443
+        published: 9443
+        mode: host
+      - target: 9000
+        published: 9000
+        mode: host
+    networks:
+      - internal_net
 
   user-service:
     image: user_service_image
     build:
       context: ./user-service
       dockerfile: Dockerfile
+    environment:
+      - DB_HOSTNAME=marketdb
+      - DB_PASS=market123
+      - DB_URL=jdbc:postgresql://marketdb:5432/marketdb
+      - DB_USER=marketdb
+      - KEYCLOAK_ISSUER=http://localhost:9090/realms/marketplace-realm # For now for local testing
+      - KEYCLOAK_JWK=http://keycloak:8080/realms/marketplace-realm/protocol/openid-connect/certs
+      - JWT_RESOURCE_ID=marketplace-client
+      - JWT_PRINCIPLE_ATTR=sub
     networks:
       - internal_net
       - backend_net
+      - database_net
+      - keycloak_net
 
   market-service:
     image: market_service_image
@@ -69,6 +144,7 @@ services:
     networks:
       - internal_net
       - backend_net
+      - database_net
 
   io-service:
     image: io_service_image
@@ -86,6 +162,8 @@ services:
 
 volumes:
   marketdb_data:
+  keycloakdb_data:
+  portainer_data:
 
 networks:
   backend_net:
@@ -95,4 +173,6 @@ networks:
   database_net:
     driver: overlay
   adminer_db_net:
+    driver: overlay
+  keycloak_net:
     driver: overlay

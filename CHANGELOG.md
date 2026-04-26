@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.0.3 - 2026-04-26
+
+### @alex2004-l
+
+### Added
+
+- Integrated Keycloak server
+- Developed a custom JWT Authenticator converter
+- Implement log in functionality in user-service
+- Added Portainer to docker-compose 
+- Added CI/CD pipeline for automated builds and image deployment
+
 ## 0.0.2 - 2026-04-03
 
 ### @daria-tanasie
