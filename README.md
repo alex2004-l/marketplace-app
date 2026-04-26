@@ -1,5 +1,26 @@
-# marketplace-app
+# Marketplace App
+---
 
-#### To build the images: docker compose build
-#### To start the stack: docker stack deploy -c docker-compose.yaml marketplaceapp
-#### To remove the stack: docker stack rm marketplaceapp
+## App description
+
+Team members:
+- 
+- 
+
+
+## Build
+
+To build the Docker images: 
+```bash
+docker compose build
+```
+
+To start the stack:
+```bash
+docker stack deploy -c docker-compose.yaml marketplaceapp
+```
+
+To remove the stack: 
+```bash
+docker stack rm marketplaceapp
+```
