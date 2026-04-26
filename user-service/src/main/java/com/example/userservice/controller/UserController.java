@@ -29,6 +29,12 @@ public class UserController {
         return ResponseEntity.ok("Successful login for user!\n");
     }
 
+    @GetMapping("/seller")
+    @PreAuthorize("hasRole('client_seller')")
+    public ResponseEntity<String> loginSeller() {
+        return ResponseEntity.ok("Successful login for seller!\n");
+    }
+
     @GetMapping("/admin")
     @PreAuthorize("hasRole('client_admin')")
     public ResponseEntity<String> loginAdmin() {

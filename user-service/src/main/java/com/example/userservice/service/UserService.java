@@ -29,7 +29,12 @@ public class UserService {
             return;
         }
 
-        Role mappedRole = (role != null && role.toUpperCase().contains("ADMIN")) ? Role.ADMIN : Role.USER;
+        Role mappedRole = Role.USER;
+        if (role != null && role.toUpperCase().contains("ADMIN"))
+            mappedRole = Role.ADMIN;
+        else if (role != null && role.toUpperCase().contains("SELLER"))
+            mappedRole = Role.SELLER;
+
         UserModel userModel = UserModel.builder()
                         .keycloakId(keycloakId)
                         .email(email)

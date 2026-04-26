@@ -47,15 +47,20 @@ public class JwtConverter implements Converter<Jwt, AbstractAuthenticationToken>
 
         Collection<GrantedAuthority> resourceRoles = extractResourceRoles(jwt);
         Stream<? extends GrantedAuthority> authorities = resourceRoles.stream();
-        String syncRole;
+        String syncRole = Role.USER.name();
 
         if (!resourceRoles.isEmpty()) {
-            boolean isKeycloakAdmin = resourceRoles.stream()
+            boolean isAdmin = resourceRoles.stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_client_admin"));
+            boolean isSeller = resourceRoles.stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_client_seller"));
 
-            syncRole = isKeycloakAdmin ? Role.ADMIN.name() : Role.USER.name();
+            if (isAdmin) {
+                syncRole = Role.ADMIN.name();
+            } else if (isSeller) {
+                syncRole = Role.SELLER.name();
+            }
         } else {
-            syncRole = Role.USER.name();
             authorities = userService.setRoles(identity).stream();
         }
 
