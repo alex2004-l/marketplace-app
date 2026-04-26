@@ -96,6 +96,25 @@ services:
     networks:
       - adminer_db_net
       - internal_net
+  
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer_data:/data
+    ports:
+      - target: 9443
+        published: 9443
+        mode: host
+      - target: 9000
+        published: 9000
+        mode: host
+    networks:
+      - internal_net
 
   user-service:
     image: user_service_image
@@ -144,6 +163,7 @@ services:
 volumes:
   marketdb_data:
   keycloakdb_data:
+  portainer_data:
 
 networks:
   backend_net:

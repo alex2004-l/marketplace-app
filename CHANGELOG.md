@@ -9,6 +9,7 @@
 - Integrated Keycloak server
 - Developed a custom JWT Authenticator converter
 - Implement log-in functionality for user-service
+- Integrated Portainer
 
 ## 0.0.2 - 2026-04-03
 
