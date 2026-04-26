@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.0.3 - 2026-04-26
+
+### @alex2004-l
+
+### Added
+
+- Integrated Keycloak server
+- Developed a custom JWT Authenticator converter
+- Implement log-in functionality for user-service
+
 ## 0.0.2 - 2026-04-03
 
 ### @daria-tanasie
