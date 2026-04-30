@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.4 - 2026-05-01
+
+### @alex2004-l
+
+- Add persistent Keycloak configuration for marketplace-realm.
+- Add register functionality to Keycloak configuration.
+
 ## 0.0.3 - 2026-04-26
 
 ### @alex2004-l
@@ -11,6 +18,7 @@
 - Implement log in functionality in user-service
 - Added Portainer to docker-compose 
 - Added CI/CD pipeline for automated builds and image deployment
+- Defined roles for the User
 
 ## 0.0.2 - 2026-04-03
 

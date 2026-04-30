@@ -60,8 +60,7 @@ services:
       - target: 8080
         published: 9090
         mode: host
-    command:
-      - start-dev
+    command: ["start-dev", "--import-realm"]
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -75,6 +74,8 @@ services:
       KC_HTTP_ENABLED: 'true'
       KC_HOSTNAME_STRICT_HTTPS: 'false'
       KC_HEALTH_ENABLED: 'true'
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/realm.json
     depends_on:
       - keycloakdb
     networks:
