@@ -1,6 +1,8 @@
 package com.example.marketservice.feignclient;
 
+import com.example.marketservice.dto.AddProductToCartDto;
 import com.example.marketservice.dto.ProductDto;
+import com.example.marketservice.dto.RemoveProductFromCartDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,4 +22,16 @@ public interface IOClient {
 
     @GetMapping("/search")
     List<ProductDto> searchByName(@RequestParam("name") String name);
+
+    @PostMapping("/add_product_to_cart")
+    String addProductToCart(@RequestBody AddProductToCartDto addProductToCartDto);
+
+    @PutMapping("/remove_one_product_from_cart")
+    String removeOneProduct(@RequestBody RemoveProductFromCartDto removeProductFromCartDto);
+
+    @PostMapping("/remove_product_from_cart")
+    String removeProduct(RemoveProductFromCartDto removeProductFromCartDto);
+
+    @GetMapping("/get_cart_total/{userId}")
+    Float getCartTotal(@PathVariable("userId") String userId);
 }

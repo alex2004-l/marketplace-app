@@ -1,6 +1,8 @@
 package com.example.marketservice.service;
 
+import com.example.marketservice.dto.AddProductToCartDto;
 import com.example.marketservice.dto.ProductDto;
+import com.example.marketservice.dto.RemoveProductFromCartDto;
 import com.example.marketservice.feignclient.IOClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -38,5 +40,21 @@ public class MarketService {
 
     public List<ProductDto> searchByName(String name) {
         return ioClient.searchByName(name);
+    }
+
+    public String addProductToCart(AddProductToCartDto dto) {
+        return ioClient.addProductToCart(dto);
+    }
+
+    public String removeOneProduct(RemoveProductFromCartDto dto) {
+        return ioClient.removeOneProduct(dto);
+    }
+
+    public String removeProduct(RemoveProductFromCartDto dto) {
+        return ioClient.removeProduct(dto);
+    }
+
+    public Float getCartTotal(String userId) {
+        return ioClient.getCartTotal(userId);
     }
 }

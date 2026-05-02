@@ -1,6 +1,8 @@
 package com.example.ioservice.controller;
 
+import com.example.ioservice.dto.AddProductToCartDto;
 import com.example.ioservice.dto.ProductDto;
+import com.example.ioservice.dto.RemoveProductFromCartDto;
 import com.example.ioservice.model.ProductModel;
 import com.example.ioservice.repository.ProductRepository;
 import com.example.ioservice.service.IOService;
@@ -40,5 +42,25 @@ public class IOController {
     @PostMapping("/change-address")
     public String changeAddress() {
         return "TODO";
+    }
+
+    @PostMapping("/add_product_to_cart")
+    public String addProductToCart(@RequestBody AddProductToCartDto addProductToCartDto) {
+        return ioService.addProductToCart(addProductToCartDto);
+    }
+
+    @PutMapping("/remove_one_product_from_cart")
+    public String removeOneProduct(@RequestBody RemoveProductFromCartDto removeProductFromCartDto) {
+        return ioService.removeOneProduct(removeProductFromCartDto);
+    }
+
+    @PostMapping("/remove_product_from_cart")
+    public String removeProduct(@RequestBody RemoveProductFromCartDto removeProductFromCartDto) {
+        return ioService.removeProduct(removeProductFromCartDto);
+    }
+
+    @GetMapping("/get_cart_total/{userId}")
+    public Float getCartTotal(@PathVariable String userId) {
+        return ioService.getCartTotal(Long.valueOf(userId));
     }
 }
