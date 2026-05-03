@@ -1,8 +1,6 @@
 package com.example.marketservice.service;
 
-import com.example.marketservice.dto.AddProductToCartDto;
-import com.example.marketservice.dto.ProductDto;
-import com.example.marketservice.dto.RemoveProductFromCartDto;
+import com.example.marketservice.dto.*;
 import com.example.marketservice.feignclient.IOClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -56,5 +54,13 @@ public class MarketService {
 
     public Float getCartTotal(String userId) {
         return ioClient.getCartTotal(userId);
+    }
+
+    public String makeOrder(OrderDto orderDto) {
+        return ioClient.makeOrder(orderDto);
+    }
+
+    public List<OrderHistoryDto> getOrdersHistory(String userId) {
+        return ioClient.getOrdersHistory(userId);
     }
 }

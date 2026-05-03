@@ -1,23 +1,16 @@
 package com.example.ioservice.service;
 
-import com.example.ioservice.dto.AddProductToCartDto;
-import com.example.ioservice.dto.ProductDto;
-import com.example.ioservice.dto.RemoveProductFromCartDto;
-import com.example.ioservice.dto.UserDto;
-import com.example.ioservice.model.CartModel;
-import com.example.ioservice.model.CartProductModel;
-import com.example.ioservice.model.ProductModel;
-import com.example.ioservice.model.UserModel;
-import com.example.ioservice.repository.CartProductRepository;
-import com.example.ioservice.repository.CartRepository;
-import com.example.ioservice.repository.ProductRepository;
-import com.example.ioservice.repository.UserRepository;
+import com.example.ioservice.dto.*;
+import com.example.ioservice.model.*;
+import com.example.ioservice.repository.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +21,7 @@ public class IOService {
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final CartProductRepository cartProductRepository;
+    private final OrderRepository orderRepository;
 
     public ProductDto addProduct(ProductDto productDto) {
         ProductModel productModel = new ProductModel(productDto.productId(), productDto.productName(),
@@ -60,6 +54,17 @@ public class IOService {
                         productModel.getQuantity())).toList();
     }
 
+    public boolean checkQuantity(Long productId, Long quantity) {
+        Optional<ProductModel> productModel = productRepository.findById(productId);
+
+        if (productModel.isPresent()) {
+            ProductModel product = productModel.get();
+            return product.getQuantity() - quantity >= 0;
+        } else {
+            return false;
+        }
+    }
+
     public String addProductToCart(AddProductToCartDto addProductToCartDto) {
         CartModel cart = cartRepository.findByUserIdAndStatus(addProductToCartDto.userId(), "inProgress")
                 .orElseGet(() -> {
@@ -71,16 +76,26 @@ public class IOService {
 
         Optional<CartProductModel> cartProduct = cartProductRepository
                 .findByCartIdAndProductId(cart.getCartId(), addProductToCartDto.productId());
-
         if (cartProduct.isPresent()) {
             CartProductModel cartProductModel = cartProduct.get();
-            cartProductModel.setQuantity(cartProductModel.getQuantity() + addProductToCartDto.quantity());
-            cartProductRepository.save(cartProductModel);
+            if(checkQuantity(cartProductModel.getProductId(), cartProductModel.getQuantity()
+                    + addProductToCartDto.quantity())) {
+                cartProductModel.setQuantity(cartProductModel.getQuantity() + addProductToCartDto.quantity());
+                cartProductRepository.save(cartProductModel);
+            } else {
+                cartProductRepository.save(cartProductModel);
+                return "Not enough products!";
+            }
         } else {
             CartProductModel newCartProduct = new CartProductModel();
             newCartProduct.setCartId(cart.getCartId());
             newCartProduct.setProductId(addProductToCartDto.productId());
-            newCartProduct.setQuantity(addProductToCartDto.quantity());
+            if(checkQuantity(newCartProduct.getProductId(), addProductToCartDto.quantity())) {
+                newCartProduct.setQuantity(addProductToCartDto.quantity());
+                cartProductRepository.save(newCartProduct);
+            } else {
+                return "Not enough products!";
+            }
             cartProductRepository.save(newCartProduct);
         }
 
@@ -123,6 +138,92 @@ public class IOService {
         }
 
         return total;
+    }
+
+    @Transactional
+    public void removeCart(Long cartId) {
+        Optional<CartModel> cartModel = cartRepository.findById(cartId);
+
+        if (cartModel.isPresent()) {
+            List<CartProductModel> products = cartProductRepository.findAllByCartId(cartId);
+            cartProductRepository.deleteAll(products);
+            cartRepository.delete(cartModel.get());
+        }
+    }
+
+    @Transactional
+    public String makeOrder(Long userId) {
+        CartModel cartModel = cartRepository.findByUserIdAndStatus(userId, "inProgress")
+                .orElseThrow(() -> new RuntimeException("Cart doesn't exist!"));
+
+        OrderModel orderModel = OrderModel.builder()
+                .cartId(cartModel.getCartId())
+                .price(getCartTotal(userId))
+                .status("inProgress")
+                .userId(userId)
+                .build();
+        orderRepository.save(orderModel);
+        boolean paymentDone = orderPayment(orderModel);
+
+        if (paymentDone) {
+            updateQuantities(cartModel.getCartId());
+            cartModel.setStatus("ready");
+            cartRepository.save(cartModel);
+            return "Order completed!";
+        } else {
+            return "Order incomplete!";
+        }
+    }
+
+    @Transactional
+    public boolean orderPayment(OrderModel order) {
+        Optional<OrderModel> optOrder = orderRepository.findByCartIdAndStatus(order.getCartId(), order.getStatus());
+
+        if (optOrder.isPresent()) {
+            OrderModel currentOrder = optOrder.get();
+            currentOrder.setStatus("completed");
+            orderRepository.save(currentOrder);
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional
+    public void updateQuantities(Long cartId) {
+        List <CartProductModel> products = cartProductRepository.findAllByCartId(cartId);
+
+        for (CartProductModel cartProductModel : products) {
+            ProductModel product = productRepository.findById(cartProductModel.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product doesn't exist!"));
+            product.setQuantity(product.getQuantity() - Math.toIntExact(cartProductModel.getQuantity()));
+            if (product.getQuantity() == 0) {
+                productRepository.deleteById(product.getProductId());
+            } else {
+                productRepository.save(product);
+            }
+        }
+    }
+
+    public List<OrderHistoryDto> getOrdersHistory(Long userId) {
+        List<OrderModel> orders = orderRepository.findAllByUserId(userId);
+        List<OrderHistoryDto> history = new ArrayList<>();
+        for (OrderModel order : orders) {
+            OrderHistoryDto orderHistoryDto = new OrderHistoryDto(order.getOrderId(), order.getPrice(),
+                    order.getStatus(), new ArrayList<>());
+
+            List<CartProductModel> cartProducts = cartProductRepository.findAllByCartId(order.getCartId());
+            for (CartProductModel cartProduct : cartProducts) {
+                Optional<ProductModel> optProductModel = productRepository.findById(cartProduct.getProductId());
+                if (optProductModel.isPresent()) {
+                    ProductModel productModel = optProductModel.get();
+                    OrderedProductDto orderedProductDto = new OrderedProductDto(productModel.getProductId(),
+                            productModel.getProductName(), productModel.getPrice(), cartProduct.getQuantity());
+                    orderHistoryDto.products().add(orderedProductDto);
+                }
+            }
+            history.add(orderHistoryDto);
+        }
+        return history;
     }
 
     public String changeAddress(String username, String address) {

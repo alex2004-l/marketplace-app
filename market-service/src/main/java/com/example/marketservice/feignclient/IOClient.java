@@ -1,8 +1,6 @@
 package com.example.marketservice.feignclient;
 
-import com.example.marketservice.dto.AddProductToCartDto;
-import com.example.marketservice.dto.ProductDto;
-import com.example.marketservice.dto.RemoveProductFromCartDto;
+import com.example.marketservice.dto.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,4 +32,10 @@ public interface IOClient {
 
     @GetMapping("/get_cart_total/{userId}")
     Float getCartTotal(@PathVariable("userId") String userId);
+
+    @PostMapping("/make_order")
+    String makeOrder(@RequestBody OrderDto orderDto);
+
+    @GetMapping("/get_orders_history/{userId}")
+    public List<OrderHistoryDto> getOrdersHistory(@PathVariable String userId);
 }

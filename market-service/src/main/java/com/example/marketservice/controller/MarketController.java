@@ -1,8 +1,6 @@
 package com.example.marketservice.controller;
 
-import com.example.marketservice.dto.AddProductToCartDto;
-import com.example.marketservice.dto.ProductDto;
-import com.example.marketservice.dto.RemoveProductFromCartDto;
+import com.example.marketservice.dto.*;
 import com.example.marketservice.service.MarketService;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -67,5 +65,17 @@ public class MarketController {
     @ResponseStatus(HttpStatus.OK)
     public Float getCartTotal(@PathVariable("userId") String userId) {
         return marketService.getCartTotal(userId);
+    }
+
+    @PostMapping("/make_order")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> makeOrder(@RequestBody OrderDto orderDto) {
+        return ResponseEntity.ok(marketService.makeOrder(orderDto));
+    }
+
+    @GetMapping("/get_orders_history/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<OrderHistoryDto> getOrdersHistory(@PathVariable("userId") String userId) {
+        return marketService.getOrdersHistory(userId);
     }
 }
