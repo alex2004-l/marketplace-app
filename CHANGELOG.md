@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.0.5 - 2025-05-03
+
+### @daria-tanasie
+
+- Add products to cart functionality
+- Added methods for managing the cart (remove, add products)
+- Added order functionality for the cart products
+- Added functionality for order total price
+- Added functionality for orders history view
+
 ## 0.0.4 - 2026-05-01
 
 ### @alex2004-l

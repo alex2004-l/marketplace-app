@@ -1,6 +1,6 @@
 package com.example.marketservice.controller;
 
-import com.example.marketservice.dto.ProductDto;
+import com.example.marketservice.dto.*;
 import com.example.marketservice.service.MarketService;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -41,5 +41,41 @@ public class MarketController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> startCheck() {
         return ResponseEntity.ok("Market service working");
+    }
+
+    @PostMapping("/add_product_to_cart")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> addProductToCart(@RequestBody AddProductToCartDto addProductToCartDto) {
+        return ResponseEntity.ok(marketService.addProductToCart(addProductToCartDto));
+    }
+
+    @PutMapping("/remove_one_product_from_cart")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> removeOneProduct(@RequestBody RemoveProductFromCartDto removeProductFromCartDto) {
+        return ResponseEntity.ok(marketService.removeOneProduct(removeProductFromCartDto));
+    }
+
+    @PostMapping("/remove_product_from_cart")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> removeProduct(@RequestBody RemoveProductFromCartDto removeProductFromCartDto) {
+        return ResponseEntity.ok(marketService.removeProduct(removeProductFromCartDto));
+    }
+
+    @GetMapping("/get_cart_total/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Float getCartTotal(@PathVariable("userId") String userId) {
+        return marketService.getCartTotal(userId);
+    }
+
+    @PostMapping("/make_order")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> makeOrder(@RequestBody OrderDto orderDto) {
+        return ResponseEntity.ok(marketService.makeOrder(orderDto));
+    }
+
+    @GetMapping("/get_orders_history/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<OrderHistoryDto> getOrdersHistory(@PathVariable("userId") String userId) {
+        return marketService.getOrdersHistory(userId);
     }
 }

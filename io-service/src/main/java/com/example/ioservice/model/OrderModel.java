@@ -1,6 +1,5 @@
 package com.example.ioservice.model;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,18 +7,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name= "products")
+@Table(name= "orders")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Data
-public class ProductModel {
+public class OrderModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long productId;
-    private String productName;
+    private Long orderId;
+    private Long userId;
+    private Long cartId;
     private Float price;
-    private String description;
-    private Long sellerId;
-    private Integer quantity;
+    private String status;
 }
