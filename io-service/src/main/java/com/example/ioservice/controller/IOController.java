@@ -1,10 +1,16 @@
 package com.example.ioservice.controller;
 
 import com.example.ioservice.dto.ProductDto;
+import com.example.ioservice.dto.WishlistDTOs.WishlistAddDTO;
+import com.example.ioservice.dto.WishlistDTOs.WishlistDTO;
+import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
+import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemDTO;
 import com.example.ioservice.model.ProductModel;
 import com.example.ioservice.repository.ProductRepository;
 import com.example.ioservice.service.IOService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,5 +46,40 @@ public class IOController {
     @PostMapping("/change-address")
     public String changeAddress() {
         return "TODO";
+    }
+
+    @PostMapping("/wishlist/add")
+    public WishlistDTO addWishlist(@RequestBody WishlistAddDTO wishlistAddDTO) {
+        return ioService.addWishlist(wishlistAddDTO);
+    }
+
+    @GetMapping("/wishlist/{id}")
+    public WishlistDTO getWishlistById(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
+        return ioService.getWishlist(id, userId);
+    }
+
+    @PostMapping("/wishlist/delete/{id}")
+    public void deleteWishlist(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
+        ioService.deleteWishlist(id, userId);
+    }
+
+    @PostMapping("/wishlist-item/add")
+    public WishlistItemDTO addWishlistItem(@RequestBody WishlistItemAddDTO wishlistItemAddDTO) {
+        return ioService.addWishlistItem(wishlistItemAddDTO);
+    }
+
+    @GetMapping("/wishlist-item/{id}")
+    public WishlistItemDTO getWishlistItemById(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
+        return ioService.getWishlistItem(id, userId);
+    }
+
+    @GetMapping("/wishlist/{name}")
+    public List<WishlistItemDTO> getWishlistItems(@PathVariable("name") String name, @RequestParam("userId") Long userId) {
+        return ioService.getWishlistItems(name, userId);
+    }
+
+    @PostMapping("/wishlist-item/delete/{id}")
+    public void deleteWishlistItem(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
+        ioService.deleteWishlistItem(id, userId);
     }
 }
