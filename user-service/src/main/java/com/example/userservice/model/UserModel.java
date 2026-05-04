@@ -15,13 +15,10 @@ import lombok.NoArgsConstructor;
 public class UserModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userId;
 
-    @Column(unique = true, nullable = false)
     private String keycloakId;
-    @Column(unique = true, nullable = false)
     private String username;
-    @Column(unique = true, nullable = false)
     private String email;
 
     @Enumerated(EnumType.STRING)

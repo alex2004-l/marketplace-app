@@ -1,21 +1,18 @@
 package com.example.ioservice.service;
 
 import com.example.ioservice.dto.ProductDto;
+import com.example.ioservice.dto.ReviewDTOs.ReviewAddDTO;
+import com.example.ioservice.dto.ReviewDTOs.ReviewDTO;
 import com.example.ioservice.dto.UserDto;
 import com.example.ioservice.dto.WishlistDTOs.WishlistDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistAddDTO;
 import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemDTO;
 import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
-import com.example.ioservice.model.ProductModel;
-import com.example.ioservice.model.UserModel;
-import com.example.ioservice.model.WishlistItemModel;
-import com.example.ioservice.model.WishlistModel;
-import com.example.ioservice.repository.ProductRepository;
-import com.example.ioservice.repository.UserRepository;
-import com.example.ioservice.repository.WishlistItemRepository;
-import com.example.ioservice.repository.WishlistRepository;
+import com.example.ioservice.model.*;
+import com.example.ioservice.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,10 +34,11 @@ public class IOService {
     private final UserRepository         userRepository;
     private final WishlistRepository     wishlistRepository;
     private final WishlistItemRepository wishlistItemRepository;
+    private final ReviewRepository       reviewRepository;
 
     public ProductDto addProduct(ProductDto productDto) {
         ProductModel productModel = new ProductModel(productDto.productId(), productDto.productName(),
-                productDto.price(), productDto.description(), productDto.ownerId(), productDto.quantity());
+                productDto.price(), productDto.description(), productDto.ownerId(), productDto.quantity(), new ArrayList<>());
         productRepository.save(productModel);
 
         return new ProductDto(productModel.getProductId(), productModel.getProductName(), productModel.getPrice(),
@@ -189,7 +188,7 @@ public class IOService {
         WishlistModel wishlistModel = wishlistRepository.findByUserIdAndWishlistName(userId, name)
                 .orElseThrow(() -> new IllegalArgumentException("Wishlist not found"));
 
-        List<WishlistItemModel> wishlistItems = wishlistItemRepository.findByWishlistModel(wishlistModel);
+        List<WishlistItemModel> wishlistItems = wishlistModel.getItems();
 
         return wishlistItems.stream()
                 .map(item -> new WishlistItemDTO(
@@ -218,5 +217,108 @@ public class IOService {
         wishlist.removeItem(wishlistItem);
 
         wishlistItemRepository.delete(wishlistItem);
+    }
+
+    @Transactional
+    public ReviewDTO addReview(ReviewAddDTO reviewAddDTO) {
+        List<UserModel> models = userRepository.findAll();
+
+        System.out.println("Total users found: " + models.size());
+        models.forEach(user -> System.out.println("User in DB: " + user));
+        System.out.println(reviewAddDTO.userId());
+
+        UserModel userModel = userRepository.findById(reviewAddDTO.userId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        ProductModel productModel = productRepository.findById(reviewAddDTO.productId())
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        boolean exists = reviewRepository.existsByUserModelAndProductModel(
+                        userModel, productModel);
+
+        if (exists) {
+            throw new IllegalStateException("Review already exists!");
+        }
+
+        ReviewModel reviewModel = new ReviewModel();
+        reviewModel.setDescription(reviewAddDTO.description());
+        reviewModel.setTitle(reviewAddDTO.title());
+        reviewModel.setRatingsEnum(reviewAddDTO.reviewRatingsEnum());
+
+        userModel.addReview(reviewModel);
+        productModel.addReview(reviewModel);
+
+        reviewRepository.save(reviewModel);
+
+        return new ReviewDTO(
+                reviewModel.getReviewId(),
+                userModel.getUserId(),
+                productModel.getProductId(),
+                reviewModel.getTitle(),
+                reviewModel.getDescription(),
+                reviewModel.getRatingsEnum()
+        );
+    }
+
+    @Transactional
+    public ReviewDTO getReviewById(Long reviewId) {
+        ReviewModel reviewModel = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Review not found"));
+
+        return new ReviewDTO(
+                reviewModel.getReviewId(),
+                reviewModel.getUserModel().getUserId(),
+                reviewModel.getProductModel().getProductId(),
+                reviewModel.getTitle(),
+                reviewModel.getDescription(),
+                reviewModel.getRatingsEnum()
+        );
+    }
+
+    @Transactional
+    public List<ReviewDTO> getReviewsByUser(Long userId) {
+        UserModel userModel = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        return userModel.getReviewModels()
+            .stream().map(item -> new ReviewDTO(
+                    item.getReviewId(),
+                    item.getUserModel().getUserId(),
+                    item.getProductModel().getProductId(),
+                    item.getTitle(),
+                    item.getDescription(),
+                    item.getRatingsEnum()
+            ))
+            .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<ReviewDTO> getReviewsByProductId(Long productId) {
+        ProductModel productModel = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        return productModel.getReviewModels()
+            .stream().map(item -> new ReviewDTO(
+                    item.getReviewId(),
+                    item.getUserModel().getUserId(),
+                    item.getProductModel().getProductId(),
+                    item.getTitle(),
+                    item.getDescription(),
+                    item.getRatingsEnum()
+            ))
+            .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteReview(Long reviewId, Long userId) {
+        ReviewModel reviewModel = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Review not found"));
+
+        if (!reviewModel.getUserModel().getUserId().equals(userId)) {
+            throw new SecurityException("User not authorized to delete review");
+        }
+
+        UserModel userModel = reviewModel.getUserModel();
+        userModel.removeReview(reviewModel);
+        reviewRepository.delete(reviewModel);
     }
 }

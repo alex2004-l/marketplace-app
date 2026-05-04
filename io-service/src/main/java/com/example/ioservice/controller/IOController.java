@@ -1,6 +1,8 @@
 package com.example.ioservice.controller;
 
 import com.example.ioservice.dto.ProductDto;
+import com.example.ioservice.dto.ReviewDTOs.ReviewAddDTO;
+import com.example.ioservice.dto.ReviewDTOs.ReviewDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistAddDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistDTO;
 import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
@@ -73,7 +75,7 @@ public class IOController {
         return ioService.getWishlistItem(id, userId);
     }
 
-    @GetMapping("/wishlist/{name}")
+    @GetMapping("/wishlist/name/{name}")
     public List<WishlistItemDTO> getWishlistItems(@PathVariable("name") String name, @RequestParam("userId") Long userId) {
         return ioService.getWishlistItems(name, userId);
     }
@@ -81,5 +83,30 @@ public class IOController {
     @PostMapping("/wishlist-item/delete/{id}")
     public void deleteWishlistItem(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
         ioService.deleteWishlistItem(id, userId);
+    }
+
+    @PostMapping("/review/add")
+    public ReviewDTO addReview(@RequestBody ReviewAddDTO reviewAddDTO) {
+        return ioService.addReview(reviewAddDTO);
+    }
+
+    @GetMapping("/review/{id}")
+    public ReviewDTO getReviewById(@PathVariable("id") Long id) {
+        return ioService.getReviewById(id);
+    }
+
+    @GetMapping("/review/user/{id}")
+    public List<ReviewDTO> getReviewsByUserId(@PathVariable("id") Long id) {
+        return ioService.getReviewsByUser(id);
+    }
+
+    @GetMapping("/review/product/{id}")
+    public List<ReviewDTO> getReviewsByProductId(@PathVariable("id") Long id) {
+        return ioService.getReviewsByProductId(id);
+    }
+
+    @PostMapping("/review/delete/{id}")
+    public void deleteReview(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
+        ioService.deleteReview(id, userId);
     }
 }

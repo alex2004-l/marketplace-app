@@ -1,6 +1,8 @@
 package com.example.marketservice.controller;
 
 import com.example.marketservice.dto.ProductDto;
+import com.example.marketservice.dto.ReviewDTOs.ReviewAddDTO;
+import com.example.marketservice.dto.ReviewDTOs.ReviewDTO;
 import com.example.marketservice.dto.WishlistDTOs.WishlistAddDTO;
 import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
 import com.example.marketservice.service.MarketService;
@@ -69,7 +71,7 @@ public class MarketController {
         return marketService.getWishlistItemById(id, userId);
     }
 
-    @GetMapping("/wishlist/{name}")
+    @GetMapping("/wishlist/name/{name}")
     public ResponseEntity<?> getWishlistItems(@PathVariable("name") String name, @RequestParam("userId") Long userId) {
         return marketService.getWishlistItems(name, userId);
     }
@@ -77,5 +79,30 @@ public class MarketController {
     @PostMapping("/wishlist-item/delete/{id}")
     public ResponseEntity<?> deleteWishlistItem(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
         return marketService.deleteWishlistItem(id, userId);
+    }
+
+    @PostMapping("/review/add")
+    public ResponseEntity<?> addReview(@RequestBody ReviewAddDTO reviewAddDTO) {
+        return marketService.addReview(reviewAddDTO);
+    }
+
+    @GetMapping("/review/{id}")
+    public ResponseEntity<?> getReviewById(@PathVariable("id") Long id) {
+        return marketService.getReviewById(id);
+    }
+
+    @GetMapping("/review/user/{id}")
+    public ResponseEntity<?> getReviewsByUserId(@PathVariable("id") Long id) {
+        return marketService.getReviewsByUserId(id);
+    }
+
+    @GetMapping("/review/product/{id}")
+    public ResponseEntity<?> getReviewsByProductId(@PathVariable("id") Long id) {
+        return marketService.getReviewsByProductId(id);
+    }
+
+    @PostMapping("/review/delete/{id}")
+    public ResponseEntity<String> deleteReview(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
+        return marketService.deleteReview(id, userId);
     }
 }

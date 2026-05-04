@@ -1,6 +1,8 @@
 package com.example.marketservice.feignclient;
 
 import com.example.marketservice.dto.ProductDto;
+import com.example.marketservice.dto.ReviewDTOs.ReviewAddDTO;
+import com.example.marketservice.dto.ReviewDTOs.ReviewDTO;
 import com.example.marketservice.dto.WishlistDTOs.WishlistAddDTO;
 import com.example.marketservice.dto.WishlistDTOs.WishlistDTO;
 import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
@@ -40,9 +42,24 @@ public interface IOClient {
     @GetMapping("/wishlist-item/{id}")
     public WishlistItemDTO getWishlistItemById(@PathVariable("id") Long id, @RequestParam("userId") Long userId);
 
-    @GetMapping("/wishlist/{name}")
+    @GetMapping("/wishlist/name/{name}")
     public List<WishlistItemDTO> getWishlistItems(@PathVariable("name") String name, @RequestParam("userId") Long userId);
 
     @PostMapping("/wishlist-item/delete/{id}")
     public void deleteWishlistItem(@PathVariable("id") Long id, @RequestParam("userId") Long userId);
+
+    @PostMapping("/review/add")
+    public ReviewDTO addReview(@RequestBody ReviewAddDTO reviewAddDTO);
+
+    @GetMapping("/review/{id}")
+    public ReviewDTO getReviewById(@PathVariable("id") Long id);
+
+    @GetMapping("/review/user/{id}")
+    public List<ReviewDTO> getReviewsByUserId(@PathVariable("id") Long id);
+
+    @GetMapping("/review/product/{id}")
+    public List<ReviewDTO> getReviewsByProductId(@PathVariable("id") Long id);
+
+    @PostMapping("/review/delete/{id}")
+    public void deleteReview(@PathVariable("id") Long id, @RequestParam("userId") Long userId);
 }

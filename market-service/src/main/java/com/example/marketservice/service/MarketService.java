@@ -1,6 +1,7 @@
 package com.example.marketservice.service;
 
 import com.example.marketservice.dto.ProductDto;
+import com.example.marketservice.dto.ReviewDTOs.ReviewAddDTO;
 import com.example.marketservice.dto.WishlistDTOs.WishlistAddDTO;
 import com.example.marketservice.dto.WishlistDTOs.WishlistDTO;
 import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
@@ -110,6 +111,47 @@ public class MarketService {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Deleted wishlist item");
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    public ResponseEntity<?> addReview(ReviewAddDTO reviewAddDTO) {
+        try {
+            return ResponseEntity.ok(ioClient.addReview(reviewAddDTO));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    public ResponseEntity<?> getReviewById(Long reviewId) {
+        try {
+            return ResponseEntity.ok(ioClient.getReviewById(reviewId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    public ResponseEntity<?> getReviewsByUserId(Long userId) {
+        try {
+            return ResponseEntity.ok(ioClient.getReviewsByUserId(userId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    public ResponseEntity<?> getReviewsByProductId(Long productId) {
+        try {
+            return ResponseEntity.ok(ioClient.getReviewsByProductId(productId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    public ResponseEntity<String> deleteReview (Long reviewId, Long userId) {
+        try {
+            ioClient.deleteReview(reviewId, userId);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Deleted review");
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
