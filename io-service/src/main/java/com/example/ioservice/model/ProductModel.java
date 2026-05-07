@@ -24,7 +24,7 @@ public class ProductModel {
     private String productName;
     private Float price;
     private String description;
-    private Long ownerId;
+    private Long sellerId;
     private Integer quantity;
 
     @OneToMany(mappedBy = "productModel", cascade = CascadeType.ALL, orphanRemoval = true)

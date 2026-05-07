@@ -1,10 +1,6 @@
 package com.example.marketservice.service;
 
-import com.example.marketservice.dto.ProductDto;
-import com.example.marketservice.dto.ReviewDTOs.ReviewAddDTO;
-import com.example.marketservice.dto.WishlistDTOs.WishlistAddDTO;
-import com.example.marketservice.dto.WishlistDTOs.WishlistDTO;
-import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
+import com.example.marketservice.dto.*;
 import com.example.marketservice.feignclient.IOClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -155,5 +151,27 @@ public class MarketService {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+    public String addProductToCart(AddProductToCartDto dto) {
+        return ioClient.addProductToCart(dto);
+    }
+
+    public String removeOneProduct(RemoveProductFromCartDto dto) {
+        return ioClient.removeOneProduct(dto);
+    }
+
+    public String removeProduct(RemoveProductFromCartDto dto) {
+        return ioClient.removeProduct(dto);
+    }
+
+    public Float getCartTotal(String userId) {
+        return ioClient.getCartTotal(userId);
+    }
+
+    public String makeOrder(OrderDto orderDto) {
+        return ioClient.makeOrder(orderDto);
+    }
+
+    public List<OrderHistoryDto> getOrdersHistory(String userId) {
+        return ioClient.getOrdersHistory(userId);
     }
 }

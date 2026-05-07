@@ -1,12 +1,6 @@
 package com.example.marketservice.feignclient;
 
-import com.example.marketservice.dto.ProductDto;
-import com.example.marketservice.dto.ReviewDTOs.ReviewAddDTO;
-import com.example.marketservice.dto.ReviewDTOs.ReviewDTO;
-import com.example.marketservice.dto.WishlistDTOs.WishlistAddDTO;
-import com.example.marketservice.dto.WishlistDTOs.WishlistDTO;
-import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
-import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemDTO;
+import com.example.marketservice.dto.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -62,4 +56,21 @@ public interface IOClient {
 
     @PostMapping("/review/delete/{id}")
     public void deleteReview(@PathVariable("id") Long id, @RequestParam("userId") Long userId);
+    @PostMapping("/add_product_to_cart")
+    String addProductToCart(@RequestBody AddProductToCartDto addProductToCartDto);
+
+    @PutMapping("/remove_one_product_from_cart")
+    String removeOneProduct(@RequestBody RemoveProductFromCartDto removeProductFromCartDto);
+
+    @PostMapping("/remove_product_from_cart")
+    String removeProduct(RemoveProductFromCartDto removeProductFromCartDto);
+
+    @GetMapping("/get_cart_total/{userId}")
+    Float getCartTotal(@PathVariable("userId") String userId);
+
+    @PostMapping("/make_order")
+    String makeOrder(@RequestBody OrderDto orderDto);
+
+    @GetMapping("/get_orders_history/{userId}")
+    public List<OrderHistoryDto> getOrdersHistory(@PathVariable String userId);
 }
