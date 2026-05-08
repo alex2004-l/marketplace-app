@@ -1,6 +1,12 @@
 package com.example.marketservice.feignclient;
 
 import com.example.marketservice.dto.*;
+import com.example.marketservice.dto.ReviewDTOs.ReviewAddDTO;
+import com.example.marketservice.dto.ReviewDTOs.ReviewDTO;
+import com.example.marketservice.dto.WishlistDTOs.WishlistAddDTO;
+import com.example.marketservice.dto.WishlistDTOs.WishlistDTO;
+import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
+import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
