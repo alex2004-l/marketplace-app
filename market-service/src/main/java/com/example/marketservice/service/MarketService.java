@@ -151,6 +151,7 @@ public class MarketService {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+        
     public String addProductToCart(AddProductToCartDto dto) {
         return ioClient.addProductToCart(dto);
     }
