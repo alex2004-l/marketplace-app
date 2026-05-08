@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.6 - 2026-05-07
+
+- Add and delete wishlist
+- Add item to wishlist
+- Get wishlist item
+- Delete item from wishlist
+- Add and delete review to product
+- Get reviews by user or by product
+
 ## 0.0.5 - 2025-05-03
 
 ### @daria-tanasie
