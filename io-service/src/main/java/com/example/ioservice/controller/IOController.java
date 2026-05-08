@@ -4,6 +4,8 @@ import com.example.ioservice.dto.ProductDto;
 import com.example.ioservice.dto.AddProductToCartDto;
 import com.example.ioservice.dto.ReviewDTOs.ReviewAddDTO;
 import com.example.ioservice.dto.ReviewDTOs.ReviewDTO;
+import com.example.ioservice.dto.UserDTOs.UserDTO;
+import com.example.ioservice.dto.UserDTOs.UserUpdateDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistAddDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistDTO;
 import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
@@ -140,5 +142,10 @@ public class IOController {
     @GetMapping("/get_orders_history/{userId}")
     public List<OrderHistoryDto> getOrdersHistory(@PathVariable String userId) {
         return ioService.getOrdersHistory(Long.valueOf(userId));
+    }
+
+    @PostMapping("/user/update")
+    public UserDTO updateUserData(@RequestBody UserUpdateDTO userDTO) {
+        return ioService.updateUserData(userDTO);
     }
 }

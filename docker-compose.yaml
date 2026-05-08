@@ -81,12 +81,6 @@ services:
     networks:
       - internal_net
       - keycloak_net
-#    healthcheck:
-#      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080; echo -e 'GET /realms/master HTTP/1.1\r\nHost: localhost:8080\r\nConnection: close\r\n\r\n' >&3; cat <&3 | grep '200 OK'"]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-#      start_period: 40s
 
   adminer:
     image: adminer
@@ -122,6 +116,10 @@ services:
     build:
       context: ./user-service
       dockerfile: Dockerfile
+    ports:
+      - target: 8080
+        published: 8090
+        mode: host
     environment:
       - DB_HOSTNAME=marketdb
       - DB_PASS=market123
@@ -172,12 +170,12 @@ volumes:
 
 networks:
   backend_net:
-    driver: overlay
+    driver: bridge
   internal_net:
-    driver: overlay
+    driver: bridge
   database_net:
-    driver: overlay
+    driver: bridge
   adminer_db_net:
-    driver: overlay
+    driver: bridge
   keycloak_net:
-    driver: overlay
+    driver: bridge

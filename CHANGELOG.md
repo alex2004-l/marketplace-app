@@ -2,6 +2,8 @@
 
 ## 0.0.6 - 2026-05-07
 
+### alex2004-l
+
 - Add and delete wishlist
 - Add item to wishlist
 - Get wishlist item

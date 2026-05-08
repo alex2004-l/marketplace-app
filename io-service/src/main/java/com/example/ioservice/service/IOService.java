@@ -3,6 +3,8 @@ package com.example.ioservice.service;
 import com.example.ioservice.dto.*;
 import com.example.ioservice.dto.ReviewDTOs.ReviewAddDTO;
 import com.example.ioservice.dto.ReviewDTOs.ReviewDTO;
+import com.example.ioservice.dto.UserDTOs.UserDTO;
+import com.example.ioservice.dto.UserDTOs.UserUpdateDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistAddDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistDTO;
 import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
@@ -11,14 +13,7 @@ import com.example.ioservice.model.*;
 import com.example.ioservice.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
-import org.apache.coyote.BadRequestException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -245,19 +240,6 @@ public class IOService {
             history.add(orderHistoryDto);
         }
         return history;
-    }
-
-    public String changeAddress(String username, String address) {
-        Optional<UserModel> userModelOptional = Optional.ofNullable(userRepository.findByUsername(username));
-
-        if (userModelOptional.isPresent()) {
-            UserModel userModel = userModelOptional.get();
-            userModel.setAddress(address);
-            userRepository.save(userModel);
-            return "Address changed successfully!";
-        } else {
-            return "User doesn't exist!";
-        }
     }
 
     public void deleteProduct(Long productId) {
@@ -500,5 +482,23 @@ public class IOService {
         UserModel userModel = reviewModel.getUserModel();
         userModel.removeReview(reviewModel);
         reviewRepository.delete(reviewModel);
+    }
+
+    @Transactional
+    public UserDTO updateUserData(UserUpdateDTO userUpdateDTO) {
+        UserModel userModel = userRepository.findById(userUpdateDTO.userId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (userUpdateDTO.address() != null)
+            userModel.setAddress(userUpdateDTO.address());
+        if (userUpdateDTO.phone() != null)
+            userModel.setPhone(userUpdateDTO.phone());
+        userRepository.save(userModel);
+
+        return new UserDTO(userModel.getUserId(),
+                userModel.getUsername(),
+                userModel.getEmail(),
+                userModel.getAddress(),
+                userModel.getPhone());
     }
 }
