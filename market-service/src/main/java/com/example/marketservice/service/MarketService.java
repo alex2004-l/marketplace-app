@@ -1,6 +1,9 @@
 package com.example.marketservice.service;
 
 import com.example.marketservice.dto.*;
+import com.example.marketservice.dto.ReviewDTOs.ReviewAddDTO;
+import com.example.marketservice.dto.WishlistDTOs.WishlistAddDTO;
+import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
 import com.example.marketservice.feignclient.IOClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;

@@ -1,6 +1,9 @@
 package com.example.marketservice.controller;
 
 import com.example.marketservice.dto.*;
+import com.example.marketservice.dto.ReviewDTOs.ReviewAddDTO;
+import com.example.marketservice.dto.WishlistDTOs.WishlistAddDTO;
+import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
 import com.example.marketservice.service.MarketService;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;

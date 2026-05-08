@@ -1,6 +1,12 @@
 package com.example.ioservice.service;
 
 import com.example.ioservice.dto.*;
+import com.example.ioservice.dto.ReviewDTOs.ReviewAddDTO;
+import com.example.ioservice.dto.ReviewDTOs.ReviewDTO;
+import com.example.ioservice.dto.WishlistDTOs.WishlistAddDTO;
+import com.example.ioservice.dto.WishlistDTOs.WishlistDTO;
+import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
+import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemDTO;
 import com.example.ioservice.model.*;
 import com.example.ioservice.repository.*;
 import jakarta.transaction.Transactional;
@@ -33,8 +39,14 @@ public class IOService {
     private final ReviewRepository       reviewRepository;
 
     public ProductDto addProduct(ProductDto productDto) {
-        ProductModel productModel = new ProductModel(productDto.productId(), productDto.productName(),
-                productDto.price(), productDto.description(), productDto.sellerId(), productDto.quantity());
+        ProductModel productModel = ProductModel.builder()
+                .productId(productDto.productId())
+                .productName(productDto.productName())
+                .price(productDto.price())
+                .description(productDto.description())
+                .sellerId(productDto.sellerId())
+                .quantity(productDto.quantity())
+                .build();
         productRepository.save(productModel);
 
         return new ProductDto(productModel.getProductId(), productModel.getProductName(), productModel.getPrice(),
