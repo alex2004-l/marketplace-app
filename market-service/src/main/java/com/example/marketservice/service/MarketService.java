@@ -39,8 +39,8 @@ public class MarketService {
         }
     }
 
-    public List<ProductDto> searchByName(String name) {
-        return ioClient.searchByName(name);
+    public List<ProductDto> searchByName(SearchProductDTO searchProductDTO) {
+        return ioClient.searchByName(searchProductDTO);
     }
 
     public ResponseEntity<?> addWishlist(WishlistAddDTO wishlistAddDTO) {

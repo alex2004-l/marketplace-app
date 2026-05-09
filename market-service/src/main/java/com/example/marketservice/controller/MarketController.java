@@ -7,6 +7,7 @@ import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
 import com.example.marketservice.service.MarketService;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,8 +42,8 @@ public class MarketController {
     }
 
     @GetMapping("/search")
-    List<ProductDto> searchByName(@RequestParam("name") String name) {
-        return marketService.searchByName(name);
+    ResponseEntity<List<ProductDto>> searchByName(@SpringQueryMap SearchProductDTO searchProductDTO) {
+        return ResponseEntity.ok(marketService.searchByName(searchProductDTO));
     }
 
     @PostMapping("/wishlist/add")

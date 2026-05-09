@@ -8,6 +8,7 @@ import com.example.marketservice.dto.WishlistDTOs.WishlistDTO;
 import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
 import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemDTO;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public interface IOClient {
     ProductDto getProductById(@PathVariable("id") Long id);
 
     @GetMapping("/search")
-    List<ProductDto> searchByName(@RequestParam("name") String name);
+    public List<ProductDto> searchByName(@SpringQueryMap SearchProductDTO searchProductDTO);
 
     @PostMapping("/wishlist/add")
     public WishlistDTO addWishlist(@RequestBody WishlistAddDTO wishlistAddDTO);

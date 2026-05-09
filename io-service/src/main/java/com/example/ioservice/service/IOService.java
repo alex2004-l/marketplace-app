@@ -13,6 +13,7 @@ import com.example.ioservice.model.*;
 import com.example.ioservice.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -63,11 +64,21 @@ public class IOService {
                 productModel.getSellerId(), productModel.getQuantity())).orElseThrow(() -> new RuntimeException("No product with id " + productId + "!"));
     }
 
-    public List<ProductDto> searchByName(String name) {
-        return productRepository.findByProductNameIgnoreCaseStartingWith(name.toLowerCase()).stream()
-                .map(productModel -> new ProductDto(productModel.getProductId(), productModel.getProductName(),
-                        productModel.getPrice(), productModel.getDescription(), productModel.getSellerId(),
-                        productModel.getQuantity())).toList();
+    public List<ProductDto> searchByName(SearchProductDTO searchProductDTO) {
+        String sortField = (searchProductDTO.sortBy() == null || searchProductDTO.sortBy().isBlank()) ? "productId" : searchProductDTO.sortBy();
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(searchProductDTO.dir()) ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        Sort sort = Sort.by(sortDirection, sortField);
+
+        return productRepository.findByProductNameIgnoreCaseStartingWith(searchProductDTO.productName().toLowerCase(), sort).stream()
+                .map(productModel -> new ProductDto(
+                        productModel.getProductId(),
+                        productModel.getProductName(),
+                        productModel.getPrice(),
+                        productModel.getDescription(),
+                        productModel.getSellerId(),
+                        productModel.getQuantity())
+                ).toList();
     }
 
     public boolean checkQuantity(Long productId, Long quantity) {

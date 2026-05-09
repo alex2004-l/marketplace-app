@@ -45,8 +45,8 @@ public class IOController {
     }
 
     @GetMapping("/search")
-    public List<ProductDto> searchByName(@RequestParam("name") String name) {
-        return ioService.searchByName(name);
+    public List<ProductDto> searchByName(SearchProductDTO searchProductDTO) {
+        return ioService.searchByName(searchProductDTO);
     }
 
     @PostMapping("/change-address")
