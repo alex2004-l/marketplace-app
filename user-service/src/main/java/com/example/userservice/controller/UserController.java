@@ -1,14 +1,14 @@
 package com.example.userservice.controller;
 
+import com.example.userservice.dto.UserDTOs.UserUpdateDTO;
 import com.example.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -39,5 +39,12 @@ public class UserController {
     @PreAuthorize("hasRole('client_admin')")
     public ResponseEntity<String> loginAdmin() {
         return ResponseEntity.ok("Successful login for admin!\n");
+    }
+
+    @PostMapping("/user/update")
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<?> updateUserData(@RequestBody UserUpdateDTO userDTO,  @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return userService.updateUserData(userDTO, keycloakSub);
     }
 }

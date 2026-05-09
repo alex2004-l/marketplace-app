@@ -4,19 +4,15 @@ import com.example.ioservice.dto.ProductDto;
 import com.example.ioservice.dto.AddProductToCartDto;
 import com.example.ioservice.dto.ReviewDTOs.ReviewAddDTO;
 import com.example.ioservice.dto.ReviewDTOs.ReviewDTO;
+import com.example.ioservice.dto.UserDTOs.UserDTO;
+import com.example.ioservice.dto.UserDTOs.UserUpdateDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistAddDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistDTO;
 import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
 import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemDTO;
 import com.example.ioservice.dto.*;
-import com.example.ioservice.model.ProductModel;
-import com.example.ioservice.repository.ProductRepository;
 import com.example.ioservice.service.IOService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
-import org.apache.coyote.Response;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,59 +33,64 @@ public class IOController {
         return ioService.seeAllProducts();
     }
 
-    @GetMapping("/get/{id}")
+    @GetMapping("/product/{id}")
     public ProductDto getProductById(@PathVariable("id") Long id) {
         return ioService.getProductById(id);
     }
 
-    @GetMapping("/search")
-    public List<ProductDto> searchByName(@RequestParam("name") String name) {
-        return ioService.searchByName(name);
+    @PutMapping("/product/{id}")
+    public ProductDto updateProduct(@PathVariable("id") Long id, @RequestBody ProductUpdateDTO productUpdateDTO, @RequestParam("keycloakId") String keycloakId) {
+        return ioService.updateProduct(id, productUpdateDTO, keycloakId);
     }
 
-    @PostMapping("/change-address")
-    public String changeAddress() {
-        return "TODO";
+    @DeleteMapping("/product/{id}")
+    public void deleteProduct(@PathVariable("id") Long id, @RequestParam("keycloakId") String keycloakId) {
+        ioService.deleteProduct(id, keycloakId);
+    }
+
+    @GetMapping("/search")
+    public List<ProductDto> searchByName(SearchProductDTO searchProductDTO) {
+        return ioService.searchByName(searchProductDTO);
     }
 
     @PostMapping("/wishlist/add")
-    public WishlistDTO addWishlist(@RequestBody WishlistAddDTO wishlistAddDTO) {
-        return ioService.addWishlist(wishlistAddDTO);
+    public WishlistDTO addWishlist(@RequestBody WishlistAddDTO wishlistAddDTO, @RequestParam("keycloakId") String keycloakId) {
+        return ioService.addWishlist(wishlistAddDTO, keycloakId);
     }
 
     @GetMapping("/wishlist/{id}")
-    public WishlistDTO getWishlistById(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
-        return ioService.getWishlist(id, userId);
+    public WishlistDTO getWishlistById(@PathVariable("id") Long id, @RequestParam("keycloakId") String keycloakId) {
+        return ioService.getWishlist(id, keycloakId);
     }
 
-    @PostMapping("/wishlist/delete/{id}")
-    public void deleteWishlist(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
-        ioService.deleteWishlist(id, userId);
+    @DeleteMapping("/wishlist/{id}")
+    public void deleteWishlist(@PathVariable("id") Long id, @RequestParam("keycloakId") String keycloakId) {
+        ioService.deleteWishlist(id, keycloakId);
     }
 
     @PostMapping("/wishlist-item/add")
-    public WishlistItemDTO addWishlistItem(@RequestBody WishlistItemAddDTO wishlistItemAddDTO) {
-        return ioService.addWishlistItem(wishlistItemAddDTO);
+    public WishlistItemDTO addWishlistItem(@RequestBody WishlistItemAddDTO wishlistItemAddDTO, @RequestParam("keycloakId") String keycloakId) {
+        return ioService.addWishlistItem(wishlistItemAddDTO, keycloakId);
     }
 
     @GetMapping("/wishlist-item/{id}")
-    public WishlistItemDTO getWishlistItemById(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
-        return ioService.getWishlistItem(id, userId);
+    public WishlistItemDTO getWishlistItemById(@PathVariable("id") Long id, @RequestParam("keycloakId") String keycloakId) {
+        return ioService.getWishlistItem(id, keycloakId);
     }
 
     @GetMapping("/wishlist/name/{name}")
-    public List<WishlistItemDTO> getWishlistItems(@PathVariable("name") String name, @RequestParam("userId") Long userId) {
-        return ioService.getWishlistItems(name, userId);
+    public List<WishlistItemDTO> getWishlistItems(@PathVariable("name") String name, @RequestParam("keycloakId") String keycloakId) {
+        return ioService.getWishlistItems(name, keycloakId);
     }
 
-    @PostMapping("/wishlist-item/delete/{id}")
-    public void deleteWishlistItem(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
-        ioService.deleteWishlistItem(id, userId);
+    @DeleteMapping("/wishlist-item/{id}")
+    public void deleteWishlistItem(@PathVariable("id") Long id, @RequestParam("keycloakId") String keycloakId) {
+        ioService.deleteWishlistItem(id, keycloakId);
     }
 
     @PostMapping("/review/add")
-    public ReviewDTO addReview(@RequestBody ReviewAddDTO reviewAddDTO) {
-        return ioService.addReview(reviewAddDTO);
+    public ReviewDTO addReview(@RequestBody ReviewAddDTO reviewAddDTO, @RequestParam("keycloakId") String keycloakId) {
+        return ioService.addReview(reviewAddDTO, keycloakId);
     }
 
     @GetMapping("/review/{id}")
@@ -107,9 +108,9 @@ public class IOController {
         return ioService.getReviewsByProductId(id);
     }
 
-    @PostMapping("/review/delete/{id}")
-    public void deleteReview(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
-        ioService.deleteReview(id, userId);
+    @DeleteMapping("/review/{id}")
+    public void deleteReview(@PathVariable("id") Long id, @RequestParam("keycloakId") String keycloakId) {
+        ioService.deleteReview(id, keycloakId);
     }
 
     @PostMapping("/add_product_to_cart")
@@ -140,5 +141,10 @@ public class IOController {
     @GetMapping("/get_orders_history/{userId}")
     public List<OrderHistoryDto> getOrdersHistory(@PathVariable String userId) {
         return ioService.getOrdersHistory(Long.valueOf(userId));
+    }
+
+    @PostMapping("/user/update")
+    public UserDTO updateUserData(@RequestBody UserUpdateDTO userDTO, @RequestParam("keycloakId") String keycloakId) {
+        return ioService.updateUserData(userDTO, keycloakId);
     }
 }

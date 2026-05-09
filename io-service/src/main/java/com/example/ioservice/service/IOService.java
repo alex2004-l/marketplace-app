@@ -3,6 +3,8 @@ package com.example.ioservice.service;
 import com.example.ioservice.dto.*;
 import com.example.ioservice.dto.ReviewDTOs.ReviewAddDTO;
 import com.example.ioservice.dto.ReviewDTOs.ReviewDTO;
+import com.example.ioservice.dto.UserDTOs.UserDTO;
+import com.example.ioservice.dto.UserDTOs.UserUpdateDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistAddDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistDTO;
 import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
@@ -12,13 +14,8 @@ import com.example.ioservice.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.catalina.User;
-import org.apache.coyote.BadRequestException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -68,11 +65,53 @@ public class IOService {
                 productModel.getSellerId(), productModel.getQuantity())).orElseThrow(() -> new RuntimeException("No product with id " + productId + "!"));
     }
 
-    public List<ProductDto> searchByName(String name) {
-        return productRepository.findByProductNameIgnoreCaseStartingWith(name.toLowerCase()).stream()
-                .map(productModel -> new ProductDto(productModel.getProductId(), productModel.getProductName(),
-                        productModel.getPrice(), productModel.getDescription(), productModel.getSellerId(),
-                        productModel.getQuantity())).toList();
+    @Transactional
+    public ProductDto updateProduct(Long productId, ProductUpdateDTO productUpdateDTO, String keycloakId) {
+        ProductModel productModel = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("No product with id " + productId));
+
+        UserModel userModel = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(()-> new RuntimeException("No user with this keycloak id"));
+
+        if (!productModel.getSellerId().equals(userModel.getUserId())) {
+            throw new RuntimeException("Seller not allowed to update this product!");
+        }
+
+        if (productUpdateDTO.productName() != null)
+            productModel.setProductName(productUpdateDTO.productName());
+        if (productUpdateDTO.price() != null)
+            productModel.setPrice(productUpdateDTO.price());
+        if (productUpdateDTO.description() != null)
+            productModel.setDescription(productUpdateDTO.description());
+        if (productUpdateDTO.quantity() != null)
+            productModel.setQuantity(productUpdateDTO.quantity());
+
+        productRepository.save(productModel);
+
+        return new ProductDto(
+                productModel.getProductId(),
+                productModel.getProductName(),
+                productModel.getPrice(),
+                productModel.getDescription(),
+                productModel.getSellerId(),
+                productModel.getQuantity());
+    }
+
+    public List<ProductDto> searchByName(SearchProductDTO searchProductDTO) {
+        String sortField = (searchProductDTO.sortBy() == null || searchProductDTO.sortBy().isBlank()) ? "productId" : searchProductDTO.sortBy();
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(searchProductDTO.dir()) ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        Sort sort = Sort.by(sortDirection, sortField);
+
+        return productRepository.findByProductNameIgnoreCaseStartingWith(searchProductDTO.productName().toLowerCase(), sort).stream()
+                .map(productModel -> new ProductDto(
+                        productModel.getProductId(),
+                        productModel.getProductName(),
+                        productModel.getPrice(),
+                        productModel.getDescription(),
+                        productModel.getSellerId(),
+                        productModel.getQuantity())
+                ).toList();
     }
 
     public boolean checkQuantity(Long productId, Long quantity) {
@@ -247,33 +286,34 @@ public class IOService {
         return history;
     }
 
-    public String changeAddress(String username, String address) {
-        Optional<UserModel> userModelOptional = Optional.ofNullable(userRepository.findByUsername(username));
+    @Transactional
+    public void deleteProduct(Long productId, String keycloakId) {
+        ProductModel productModel = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product doesn't exist!"));
 
-        if (userModelOptional.isPresent()) {
-            UserModel userModel = userModelOptional.get();
-            userModel.setAddress(address);
-            userRepository.save(userModel);
-            return "Address changed successfully!";
-        } else {
-            return "User doesn't exist!";
+        UserModel userModel = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+
+        if (!productModel.getSellerId().equals(userModel.getUserId())) {
+            throw new RuntimeException("Product doesn't exist!");
         }
-    }
 
-    public void deleteProduct(Long productId) {
         productRepository.deleteById(productId);
     }
 
     @Transactional
-    public WishlistDTO addWishlist(WishlistAddDTO wishlistAddDTO) {
-        boolean exists = wishlistRepository.existsByUserIdAndWishlistName(wishlistAddDTO.userId(), wishlistAddDTO.wishlistName());
+    public WishlistDTO addWishlist(WishlistAddDTO wishlistAddDTO, String keycloakId) {
+        UserModel userModel = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+
+        boolean exists = wishlistRepository.existsByUserIdAndWishlistName(userModel.getUserId(), wishlistAddDTO.wishlistName());
         if (exists) {
             throw new IllegalStateException("Wishlist already exists!");
         }
 
         WishlistModel wishlist = new WishlistModel();
         wishlist.setWishlistName(wishlistAddDTO.wishlistName());
-        wishlist.setUserId(wishlistAddDTO.userId());
+        wishlist.setUserId(userModel.getUserId());
 
         wishlistRepository.save(wishlist);
 
@@ -284,11 +324,14 @@ public class IOService {
     }
 
     @Transactional
-    public WishlistDTO getWishlist(Long wishlistId, Long userId) {
+    public WishlistDTO getWishlist(Long wishlistId, String keycloakId) {
         WishlistModel wishlist = wishlistRepository.findById(wishlistId)
                 .orElseThrow(() -> new IllegalArgumentException("Wishlist not found"));
 
-        if (!wishlist.getUserId().equals(userId)) {
+        UserModel userModel = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+
+        if (!wishlist.getUserId().equals(userModel.getUserId())) {
             throw new SecurityException("User is not authorized to access wishlist");
         }
 
@@ -300,11 +343,14 @@ public class IOService {
     }
 
     @Transactional
-    public void deleteWishlist(Long wishlistId, Long userId) {
+    public void deleteWishlist(Long wishlistId, String keycloakId) {
         WishlistModel wishlist = wishlistRepository.findById(wishlistId)
                 .orElseThrow(() -> new IllegalArgumentException("Wishlist not found"));
 
-        if (!wishlist.getUserId().equals(userId)) {
+        UserModel userModel = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+
+        if (!wishlist.getUserId().equals(userModel.getUserId())) {
             throw new SecurityException("User is not authorized to access wishlist");
         }
 
@@ -312,16 +358,18 @@ public class IOService {
     }
 
     @Transactional
-    public WishlistItemDTO addWishlistItem(WishlistItemAddDTO wishlistItemAddDTO) {
+    public WishlistItemDTO addWishlistItem(WishlistItemAddDTO wishlistItemAddDTO, String keycloakId) {
         WishlistModel wishlist = wishlistRepository.findById(wishlistItemAddDTO.wishlistId())
                 .orElseThrow(() -> new IllegalArgumentException("Wishlist doesn't exist!"));
 
-        if (!wishlist.getUserId().equals(wishlistItemAddDTO.userId())) {
+        UserModel userModel = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+
+        if (!wishlist.getUserId().equals(userModel.getUserId())) {
             throw new SecurityException("User is not authorized to access wishlist");
         }
 
-        boolean product_exists = productRepository.existsById(wishlistItemAddDTO.productId());
-        if (!product_exists) {
+        if (!productRepository.existsById(wishlistItemAddDTO.productId())) {
             throw new IllegalArgumentException("Product doesn't exist!");
         }
 
@@ -347,11 +395,14 @@ public class IOService {
     }
 
     @Transactional
-    public WishlistItemDTO getWishlistItem(Long wishlistItemId, Long userId) {
+    public WishlistItemDTO getWishlistItem(Long wishlistItemId, String keycloakId) {
         WishlistItemModel wishlistItem = wishlistItemRepository.findById(wishlistItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Wishlist item doesn't exist!"));
 
-        if (!wishlistItem.getWishlistModel().getUserId().equals(userId)) {
+        UserModel userModel = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+
+        if (!wishlistItem.getWishlistModel().getUserId().equals(userModel.getUserId())) {
             throw new SecurityException("User is not authorized to access wishlist item");
         }
 
@@ -364,8 +415,11 @@ public class IOService {
     }
 
     @Transactional
-    public List<WishlistItemDTO> getWishlistItems(String name, Long userId) {
-        WishlistModel wishlistModel = wishlistRepository.findByUserIdAndWishlistName(userId, name)
+    public List<WishlistItemDTO> getWishlistItems(String name, String keycloakId) {
+        UserModel userModel = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+
+        WishlistModel wishlistModel = wishlistRepository.findByUserIdAndWishlistName(userModel.getUserId(), name)
                 .orElseThrow(() -> new IllegalArgumentException("Wishlist not found"));
 
         List<WishlistItemModel> wishlistItems = wishlistModel.getItems();
@@ -381,16 +435,15 @@ public class IOService {
     }
 
     @Transactional
-    public void deleteWishlistItem(Long wishlistItemId, Long userId) {
-        WishlistItemModel wishlistItem = wishlistItemRepository.findByWishlistItemId(wishlistItemId);
-
-        if (wishlistItem == null) {
-            throw new IllegalArgumentException("Wishlist item doesn't exist!");
-        }
+    public void deleteWishlistItem(Long wishlistItemId, String keycloakId) {
+        WishlistItemModel wishlistItem = wishlistItemRepository.findByWishlistItemId(wishlistItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Wishlist item doesn't exist!"));
 
         WishlistModel wishlist = wishlistItem.getWishlistModel();
+        UserModel userModel = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
 
-        if (!wishlist.getUserId().equals(userId)) {
+        if (!wishlist.getUserId().equals(userModel.getUserId())) {
             throw new SecurityException("User not authorized to delete wishlist item");
         }
 
@@ -400,21 +453,13 @@ public class IOService {
     }
 
     @Transactional
-    public ReviewDTO addReview(ReviewAddDTO reviewAddDTO) {
-        List<UserModel> models = userRepository.findAll();
-
-        System.out.println("Total users found: " + models.size());
-        models.forEach(user -> System.out.println("User in DB: " + user));
-        System.out.println(reviewAddDTO.userId());
-
-        UserModel userModel = userRepository.findById(reviewAddDTO.userId())
+    public ReviewDTO addReview(ReviewAddDTO reviewAddDTO, String keycloakId) {
+        UserModel userModel = userRepository.findByKeycloakId(keycloakId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         ProductModel productModel = productRepository.findById(reviewAddDTO.productId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        boolean exists = reviewRepository.existsByUserModelAndProductModel(
-                        userModel, productModel);
-
+        boolean exists = reviewRepository.existsByUserModelAndProductModel(userModel, productModel);
         if (exists) {
             throw new IllegalStateException("Review already exists!");
         }
@@ -489,16 +534,40 @@ public class IOService {
     }
 
     @Transactional
-    public void deleteReview(Long reviewId, Long userId) {
+    public void deleteReview(Long reviewId, String keycloakId) {
         ReviewModel reviewModel = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("Review not found"));
 
-        if (!reviewModel.getUserModel().getUserId().equals(userId)) {
+        UserModel userModel = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+
+        if (!reviewModel.getUserModel().getUserId().equals(userModel.getUserId())) {
             throw new SecurityException("User not authorized to delete review");
         }
 
-        UserModel userModel = reviewModel.getUserModel();
         userModel.removeReview(reviewModel);
+
+        ProductModel productModel = reviewModel.getProductModel();
+        productModel.removeReview(reviewModel);
+
         reviewRepository.delete(reviewModel);
+    }
+
+    @Transactional
+    public UserDTO updateUserData(UserUpdateDTO userUpdateDTO, String keycloakId) {
+        UserModel userModel = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (userUpdateDTO.address() != null)
+            userModel.setAddress(userUpdateDTO.address());
+        if (userUpdateDTO.phone() != null)
+            userModel.setPhone(userUpdateDTO.phone());
+        userRepository.save(userModel);
+
+        return new UserDTO(userModel.getUserId(),
+                userModel.getUsername(),
+                userModel.getEmail(),
+                userModel.getAddress(),
+                userModel.getPhone());
     }
 }

@@ -1,8 +1,9 @@
-package com.example.userservice.config;
+package com.example.marketservice.config;
 
-import com.example.userservice.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.example.marketservice.service.MarketService;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -15,11 +16,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig{
     private final JwtConverter jwtConverter;
-    private final UserService userService;
+    private final MarketService marketService;
 
-    public SecurityConfig(UserService userService, JwtConverter jwtConverter) {
+    public SecurityConfig(MarketService marketService, JwtConverter jwtConverter) {
         this.jwtConverter = jwtConverter;
-        this.userService = userService;
+        this.marketService = marketService;
     }
 
     @Bean
@@ -31,9 +32,12 @@ public class SecurityConfig{
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                "/swagger-resources/**",
+                                "/webjars/**",
+                                "/error"
                         ).permitAll()
-                        .requestMatchers("/api/user/**").permitAll()
+                        .requestMatchers("/api/market/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(
                         (oauth2)-> oauth2.jwt(

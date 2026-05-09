@@ -1,26 +1,29 @@
 package com.example.userservice.service;
 
+import com.example.userservice.dto.UserDTOs.UserDTO;
+import com.example.userservice.dto.UserDTOs.UserUpdateDTO;
+import com.example.userservice.feignClient.IOClient;
 import com.example.userservice.model.Role;
 import com.example.userservice.model.UserModel;
 import com.example.userservice.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
-
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
     private final UserRepository userRepository;
+    private final IOClient ioClient;
 
     @Transactional
     public void addUser(String keycloakId, String username, String email, String firstName, String lastName, String role) {
@@ -59,5 +62,14 @@ public class UserService {
     public void deleteUsersTable() {
         log.warn("Deleting all the users from the database");
         userRepository.deleteAll();
+    }
+
+    @Transactional
+    public ResponseEntity<?> updateUserData(UserUpdateDTO userUpdateDTO, String keycloakSub) {
+        try {
+            return ResponseEntity.ok(ioClient.updateUserData(userUpdateDTO, keycloakSub));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }
