@@ -9,6 +9,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,13 +44,17 @@ public class MarketController {
     }
 
     @PutMapping("/product/{id}")
-    public  ResponseEntity<?> updateProduct(@PathVariable("id") Long id, @RequestBody ProductUpdateDTO productUpdateDTO, @RequestParam("userId") Long userId) {
-        return marketService.updateProduct(id, productUpdateDTO, userId);
+    @PreAuthorize("hasRole('client_seller')")
+    public  ResponseEntity<?> updateProduct(@PathVariable("id") Long id, @RequestBody ProductUpdateDTO productUpdateDTO, @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return marketService.updateProduct(id, productUpdateDTO, keycloakSub);
     }
 
     @DeleteMapping("/product/{id}")
-    public ResponseEntity<String> deleteProduct(@PathVariable("id") Long productId, @RequestParam("userId") Long userId) {
-        return marketService.deleteProduct(productId, userId);
+    @PreAuthorize("hasRole('client_seller')")
+    public ResponseEntity<String> deleteProduct(@PathVariable("id") Long productId, @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return marketService.deleteProduct(productId, keycloakSub);
     }
 
     @GetMapping("/search")
@@ -56,43 +63,59 @@ public class MarketController {
     }
 
     @PostMapping("/wishlist/add")
-    public ResponseEntity<?> addWishlist(@RequestBody WishlistAddDTO wishlistAddDTO) {
-        return marketService.addWishlist(wishlistAddDTO);
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<?> addWishlist(@RequestBody WishlistAddDTO wishlistAddDTO, @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return marketService.addWishlist(wishlistAddDTO, keycloakSub);
     }
 
     @GetMapping("/wishlist/{id}")
-    public ResponseEntity<?> getWishlistById(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
-        return marketService.getWishlistById(id, userId);
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<?> getWishlistById(@PathVariable("id") Long id, @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return marketService.getWishlistById(id, keycloakSub);
     }
 
     @DeleteMapping("/wishlist/{id}")
-    public ResponseEntity<?> deleteWishlist(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
-        return marketService.deleteWishlist(id, userId);
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<?> deleteWishlist(@PathVariable("id") Long id, @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return marketService.deleteWishlist(id, keycloakSub);
     }
 
     @PostMapping("/wishlist-item/add")
-    public ResponseEntity<?> addWishlistItem(@RequestBody WishlistItemAddDTO wishlistItemAddDTO) {
-        return marketService.addWishlistItem(wishlistItemAddDTO);
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<?> addWishlistItem(@RequestBody WishlistItemAddDTO wishlistItemAddDTO, @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return marketService.addWishlistItem(wishlistItemAddDTO, keycloakSub);
     }
 
     @GetMapping("/wishlist-item/{id}")
-    public ResponseEntity<?> getWishlistItemById(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
-        return marketService.getWishlistItemById(id, userId);
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<?> getWishlistItemById(@PathVariable("id") Long id, @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return marketService.getWishlistItemById(id, keycloakSub);
     }
 
     @GetMapping("/wishlist/name/{name}")
-    public ResponseEntity<?> getWishlistItems(@PathVariable("name") String name, @RequestParam("userId") Long userId) {
-        return marketService.getWishlistItems(name, userId);
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<?> getWishlistItems(@PathVariable("name") String name, @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return marketService.getWishlistItems(name, keycloakSub);
     }
 
     @DeleteMapping("/wishlist-item/{id}")
-    public ResponseEntity<?> deleteWishlistItem(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
-        return marketService.deleteWishlistItem(id, userId);
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<?> deleteWishlistItem(@PathVariable("id") Long id, @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return marketService.deleteWishlistItem(id, keycloakSub);
     }
 
     @PostMapping("/review/add")
-    public ResponseEntity<?> addReview(@RequestBody ReviewAddDTO reviewAddDTO) {
-        return marketService.addReview(reviewAddDTO);
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<?> addReview(@RequestBody ReviewAddDTO reviewAddDTO, @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return marketService.addReview(reviewAddDTO, keycloakSub);
     }
 
     @GetMapping("/review/{id}")
@@ -111,8 +134,10 @@ public class MarketController {
     }
 
     @DeleteMapping("/review/{id}")
-    public ResponseEntity<String> deleteReview(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
-        return marketService.deleteReview(id, userId);
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<String> deleteReview(@PathVariable("id") Long id, @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return marketService.deleteReview(id, keycloakSub);
     }
 
     @PostMapping("/add_product_to_cart")

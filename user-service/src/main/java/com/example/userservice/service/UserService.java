@@ -65,9 +65,9 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<?> updateUserData(UserUpdateDTO userUpdateDTO) {
+    public ResponseEntity<?> updateUserData(UserUpdateDTO userUpdateDTO, String keycloakSub) {
         try {
-            return ResponseEntity.ok(ioClient.updateUserData(userUpdateDTO));
+            return ResponseEntity.ok(ioClient.updateUserData(userUpdateDTO, keycloakSub));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }

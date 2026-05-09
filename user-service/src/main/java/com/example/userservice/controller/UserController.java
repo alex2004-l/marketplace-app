@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -40,7 +42,9 @@ public class UserController {
     }
 
     @PostMapping("/user/update")
-    public ResponseEntity<?> updateUserData(@RequestBody UserUpdateDTO userDTO) {
-        return userService.updateUserData(userDTO);
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<?> updateUserData(@RequestBody UserUpdateDTO userDTO,  @AuthenticationPrincipal Jwt jwt) {
+        String keycloakSub = jwt.getClaimAsString("sub");
+        return userService.updateUserData(userDTO, keycloakSub);
     }
 }

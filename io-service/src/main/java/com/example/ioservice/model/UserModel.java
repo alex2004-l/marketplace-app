@@ -19,6 +19,7 @@ public class UserModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
+    private String keycloakId;
     private String username;
     private String email;
 
