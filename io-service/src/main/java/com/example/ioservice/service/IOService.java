@@ -64,6 +64,35 @@ public class IOService {
                 productModel.getSellerId(), productModel.getQuantity())).orElseThrow(() -> new RuntimeException("No product with id " + productId + "!"));
     }
 
+    @Transactional
+    public ProductDto updateProduct(Long productId, ProductUpdateDTO productUpdateDTO, Long userId) {
+        ProductModel productModel = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("No product with id " + productId));
+
+        if (!productModel.getSellerId().equals(userId)) {
+            throw new RuntimeException("Seller not allowed to update this product!");
+        }
+
+        if (productUpdateDTO.productName() != null)
+            productModel.setProductName(productUpdateDTO.productName());
+        if (productUpdateDTO.price() != null)
+            productModel.setPrice(productUpdateDTO.price());
+        if (productUpdateDTO.description() != null)
+            productModel.setDescription(productUpdateDTO.description());
+        if (productUpdateDTO.quantity() != null)
+            productModel.setQuantity(productUpdateDTO.quantity());
+
+        productRepository.save(productModel);
+
+        return new ProductDto(
+                productModel.getProductId(),
+                productModel.getProductName(),
+                productModel.getPrice(),
+                productModel.getDescription(),
+                productModel.getSellerId(),
+                productModel.getQuantity());
+    }
+
     public List<ProductDto> searchByName(SearchProductDTO searchProductDTO) {
         String sortField = (searchProductDTO.sortBy() == null || searchProductDTO.sortBy().isBlank()) ? "productId" : searchProductDTO.sortBy();
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(searchProductDTO.dir()) ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -253,7 +282,14 @@ public class IOService {
         return history;
     }
 
-    public void deleteProduct(Long productId) {
+    @Transactional
+    public void deleteProduct(Long productId, Long userId) {
+        ProductModel productModel = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product doesn't exist!"));
+
+        if (!productModel.getSellerId().equals(userId)) {
+            throw new RuntimeException("Product doesn't exist!");
+        }
         productRepository.deleteById(productId);
     }
 

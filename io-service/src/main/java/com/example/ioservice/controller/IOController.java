@@ -11,14 +11,8 @@ import com.example.ioservice.dto.WishlistDTOs.WishlistDTO;
 import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
 import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemDTO;
 import com.example.ioservice.dto.*;
-import com.example.ioservice.model.ProductModel;
-import com.example.ioservice.repository.ProductRepository;
 import com.example.ioservice.service.IOService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
-import org.apache.coyote.Response;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,19 +33,24 @@ public class IOController {
         return ioService.seeAllProducts();
     }
 
-    @GetMapping("/get/{id}")
+    @GetMapping("/product/{id}")
     public ProductDto getProductById(@PathVariable("id") Long id) {
         return ioService.getProductById(id);
+    }
+
+    @PutMapping("/product/{id}")
+    public ProductDto updateProduct(@PathVariable("id") Long id, @RequestBody ProductUpdateDTO productUpdateDTO, @RequestParam("userId") Long userId) {
+        return ioService.updateProduct(id, productUpdateDTO, userId);
+    }
+
+    @DeleteMapping("/product/{id}")
+    public void deleteProduct(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
+        ioService.deleteProduct(id, userId);
     }
 
     @GetMapping("/search")
     public List<ProductDto> searchByName(SearchProductDTO searchProductDTO) {
         return ioService.searchByName(searchProductDTO);
-    }
-
-    @PostMapping("/change-address")
-    public String changeAddress() {
-        return "TODO";
     }
 
     @PostMapping("/wishlist/add")
@@ -64,7 +63,7 @@ public class IOController {
         return ioService.getWishlist(id, userId);
     }
 
-    @PostMapping("/wishlist/delete/{id}")
+    @DeleteMapping("/wishlist/{id}")
     public void deleteWishlist(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
         ioService.deleteWishlist(id, userId);
     }
@@ -84,7 +83,7 @@ public class IOController {
         return ioService.getWishlistItems(name, userId);
     }
 
-    @PostMapping("/wishlist-item/delete/{id}")
+    @DeleteMapping("/wishlist-item/{id}")
     public void deleteWishlistItem(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
         ioService.deleteWishlistItem(id, userId);
     }
@@ -109,7 +108,7 @@ public class IOController {
         return ioService.getReviewsByProductId(id);
     }
 
-    @PostMapping("/review/delete/{id}")
+    @DeleteMapping("/review/{id}")
     public void deleteReview(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
         ioService.deleteReview(id, userId);
     }

@@ -6,7 +6,6 @@ import com.example.marketservice.dto.WishlistDTOs.WishlistAddDTO;
 import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
 import com.example.marketservice.service.MarketService;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,9 +35,19 @@ public class MarketController {
         return marketService.seeAllProducts();
     }
 
-    @GetMapping("/get/{id}")
+    @GetMapping("/product/{id}")
     ResponseEntity<ProductDto> getProductById(@PathVariable("id") Long id) {
         return marketService.getProductById(id);
+    }
+
+    @PutMapping("/product/{id}")
+    public  ResponseEntity<?> updateProduct(@PathVariable("id") Long id, @RequestBody ProductUpdateDTO productUpdateDTO, @RequestParam("userId") Long userId) {
+        return marketService.updateProduct(id, productUpdateDTO, userId);
+    }
+
+    @DeleteMapping("/product/{id}")
+    public ResponseEntity<String> deleteProduct(@PathVariable("id") Long productId, @RequestParam("userId") Long userId) {
+        return marketService.deleteProduct(productId, userId);
     }
 
     @GetMapping("/search")
@@ -56,7 +65,7 @@ public class MarketController {
         return marketService.getWishlistById(id, userId);
     }
 
-    @PostMapping("/wishlist/delete/{id}")
+    @DeleteMapping("/wishlist/{id}")
     public ResponseEntity<?> deleteWishlist(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
         return marketService.deleteWishlist(id, userId);
     }
@@ -76,7 +85,7 @@ public class MarketController {
         return marketService.getWishlistItems(name, userId);
     }
 
-    @PostMapping("/wishlist-item/delete/{id}")
+    @DeleteMapping("/wishlist-item/{id}")
     public ResponseEntity<?> deleteWishlistItem(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
         return marketService.deleteWishlistItem(id, userId);
     }
@@ -101,7 +110,7 @@ public class MarketController {
         return marketService.getReviewsByProductId(id);
     }
 
-    @PostMapping("/review/delete/{id}")
+    @DeleteMapping("/review/{id}")
     public ResponseEntity<String> deleteReview(@PathVariable("id") Long id, @RequestParam("userId") Long userId) {
         return marketService.deleteReview(id, userId);
     }

@@ -6,7 +6,6 @@ import com.example.marketservice.dto.WishlistDTOs.WishlistAddDTO;
 import com.example.marketservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
 import com.example.marketservice.feignclient.IOClient;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +35,24 @@ public class MarketService {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ProductDto(null, null,null, null,null,null));
+        }
+    }
+
+    public ResponseEntity<?> updateProduct(Long productId, ProductUpdateDTO productUpdateDTO, Long userId) {
+        try {
+            return ResponseEntity.ok(ioClient.updateProduct(productId, productUpdateDTO, userId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        }
+    }
+
+    public ResponseEntity<String> deleteProduct(Long productId, Long userId) {
+        try {
+            ioClient.deleteProduct(productId, userId);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Deleted product");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
