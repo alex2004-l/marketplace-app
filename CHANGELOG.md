@@ -1,8 +1,26 @@
 # Changelog
 
+## 0.0.8 - 2026-05-10
+
+### @alex2004-l
+
+- Add Prometheus and Grafana
+- Add Grafana Dashboard Export
+
+## 0.0.7 - 2026-05-09
+
+### @alex2004-l
+
+- Update user address/phone
+- Update/delete product
+- Improve search - search by field + allow ordering
+- Add keycloak authorization in market-service
+- Integrate keycloak authorization for review, wishlist, user update and update/delete product
+- Integrate Prometheus and Grafana
+
 ## 0.0.6 - 2026-05-07
 
-### alex2004-l
+### @alex2004-l
 
 - Add and delete wishlist
 - Add item to wishlist
