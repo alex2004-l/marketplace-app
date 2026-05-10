@@ -4,6 +4,7 @@ import com.example.ioservice.dto.ProductDto;
 import com.example.ioservice.dto.AddProductToCartDto;
 import com.example.ioservice.dto.ReviewDTOs.ReviewAddDTO;
 import com.example.ioservice.dto.ReviewDTOs.ReviewDTO;
+import com.example.ioservice.dto.UserDTOs.AddUserDto;
 import com.example.ioservice.dto.UserDTOs.UserDTO;
 import com.example.ioservice.dto.UserDTOs.UserUpdateDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistAddDTO;
@@ -11,11 +12,13 @@ import com.example.ioservice.dto.WishlistDTOs.WishlistDTO;
 import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemAddDTO;
 import com.example.ioservice.dto.WishlistItemDTOs.WishlistItemDTO;
 import com.example.ioservice.dto.*;
+import com.example.ioservice.model.UserModel;
 import com.example.ioservice.service.IOService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/internal/io")
@@ -146,5 +149,25 @@ public class IOController {
     @PostMapping("/user/update")
     public UserDTO updateUserData(@RequestBody UserUpdateDTO userDTO, @RequestParam("keycloakId") String keycloakId) {
         return ioService.updateUserData(userDTO, keycloakId);
+    }
+
+    @GetMapping("/user/check_if_exists/{id}")
+    public Boolean checkIfUserExists(@PathVariable String id) {
+        return ioService.checkIfUserExists(id);
+    }
+
+    @PostMapping("/user/add_user")
+    public void addUser(@RequestBody AddUserDto dto) {
+        ioService.addUser(dto);
+    }
+
+    @GetMapping("/user/find_user/{id}")
+    public Optional<UserModel> findUserByKeycloakId(@PathVariable String id) {
+        return ioService.findUserByKeycloakId(id);
+    }
+
+    @DeleteMapping("/user/delete_users")
+    public void deleteUsersTable() {
+        ioService.deleteUsersTable();
     }
 }

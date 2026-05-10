@@ -3,6 +3,7 @@ package com.example.ioservice.service;
 import com.example.ioservice.dto.*;
 import com.example.ioservice.dto.ReviewDTOs.ReviewAddDTO;
 import com.example.ioservice.dto.ReviewDTOs.ReviewDTO;
+import com.example.ioservice.dto.UserDTOs.AddUserDto;
 import com.example.ioservice.dto.UserDTOs.UserDTO;
 import com.example.ioservice.dto.UserDTOs.UserUpdateDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistAddDTO;
@@ -583,5 +584,32 @@ public class IOService {
                 userModel.getEmail(),
                 userModel.getAddress(),
                 userModel.getPhone());
+    }
+
+    public Boolean checkIfUserExists(String keycloakId) {
+        return userRepository.existsByKeycloakId(keycloakId);
+    }
+
+    @Transactional
+    public void addUser(AddUserDto dto) {
+        UserModel userModel = UserModel.builder()
+                .keycloakId(dto.keycloakId())
+                .username(dto.username())
+                .email(dto.email())
+                .role(dto.role())
+                .firstName(dto.firstName())
+                .lastName(dto.lastName())
+                .build();
+
+        userRepository.save(userModel);
+    }
+
+    public Optional<UserModel> findUserByKeycloakId(String keycloakId) {
+        return userRepository.findByKeycloakId(keycloakId);
+    }
+
+    @Transactional
+    public void deleteUsersTable() {
+        userRepository.deleteAll();
     }
 }

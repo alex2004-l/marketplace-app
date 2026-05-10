@@ -1,6 +1,5 @@
 package com.example.userservice.config;
 import com.example.userservice.model.Role;
-import com.example.userservice.repository.UserRepository;
 import com.example.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +26,6 @@ public class JwtConverter implements Converter<Jwt, AbstractAuthenticationToken>
     private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter =
             new JwtGrantedAuthoritiesConverter();
     private final UserService userService;
-    private final UserRepository userRepository;
 
     @Value("${jwt.auth.converter.principle-attribute}")
     private String principleAttribute;
