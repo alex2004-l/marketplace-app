@@ -24,7 +24,7 @@ public class IOController {
     private final IOService ioService;
 
     @PostMapping("/add_product")
-    public ProductDto addProduct(@RequestBody ProductDto productDto) {
+    public ProductDto addProduct(@RequestBody ProductSecDto productDto) {
         return ioService.addProduct(productDto);
     }
 
@@ -130,17 +130,17 @@ public class IOController {
 
     @GetMapping("/get_cart_total/{userId}")
     public Float getCartTotal(@PathVariable String userId) {
-        return ioService.getCartTotal(Long.valueOf(userId));
+        return ioService.getCartTotal(userId);
     }
 
     @PostMapping("/make_order")
     public String makeOrder(@RequestBody OrderDto orderDto) {
-        return ioService.makeOrder(orderDto.userId());
+        return ioService.makeOrder(orderDto.keycloakId());
     }
 
     @GetMapping("/get_orders_history/{userId}")
     public List<OrderHistoryDto> getOrdersHistory(@PathVariable String userId) {
-        return ioService.getOrdersHistory(Long.valueOf(userId));
+        return ioService.getOrdersHistory(userId);
     }
 
     @PostMapping("/user/update")

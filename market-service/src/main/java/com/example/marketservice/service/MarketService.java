@@ -19,12 +19,13 @@ public class MarketService {
     private final IOClient ioClient;
     private final JwtDecoder jwtDecoderByJwkKeySetUri;
 
-    public ResponseEntity<ProductDto> addProduct(ProductDto productDto) {
+    public ResponseEntity<ProductDto> addProduct(ProductSecDto productDto) {
         if (productDto.productName().length() <= 3) return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ProductDto(null, null,null, null,null,null));
         if (productDto.price() <= 0) return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ProductDto(null, null,null, null,null,null));
-        return ResponseEntity.ok(ioClient.addProduct(productDto));
+        ProductDto newProduct = ioClient.addProduct(productDto);
+        return ResponseEntity.ok(newProduct);
     }
 
     public List<ProductDto> seeAllProducts() {
@@ -175,15 +176,15 @@ public class MarketService {
         }
     }
         
-    public String addProductToCart(AddProductToCartDto dto) {
+    public String addProductToCart(AddProductToCartSecDto dto) {
         return ioClient.addProductToCart(dto);
     }
 
-    public String removeOneProduct(RemoveProductFromCartDto dto) {
+    public String removeOneProduct(RemoveProductFromCartSecDto dto) {
         return ioClient.removeOneProduct(dto);
     }
 
-    public String removeProduct(RemoveProductFromCartDto dto) {
+    public String removeProduct(RemoveProductFromCartSecDto dto) {
         return ioClient.removeProduct(dto);
     }
 

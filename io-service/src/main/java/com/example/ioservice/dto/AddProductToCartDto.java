@@ -1,4 +1,4 @@
 package com.example.ioservice.dto;
 
-public record AddProductToCartDto(Long userId, Long productId, Long quantity) {
+public record AddProductToCartDto(String keycloakId, Long productId, Long quantity) {
 }

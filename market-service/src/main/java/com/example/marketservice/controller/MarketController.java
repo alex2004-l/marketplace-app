@@ -29,8 +29,11 @@ public class MarketController {
     }
 
     @PostMapping("/add_product")
-    public ResponseEntity<ProductDto> addProduct(@RequestBody ProductDto productDto) {
-        return marketService.addProduct(productDto);
+    @PreAuthorize("hasRole('client_seller')")
+    public ResponseEntity<ProductDto> addProduct(@RequestBody ProductDto productDto, @AuthenticationPrincipal Jwt jwt) {
+        ProductSecDto productSecDto = new ProductSecDto(productDto.productId(), productDto.productName(), productDto.price(),
+                productDto.description(), jwt.getClaimAsString("sub"), productDto.quantity());
+        return marketService.addProduct(productSecDto);
     }
 
     @GetMapping("/see_all_products")
@@ -142,37 +145,52 @@ public class MarketController {
 
     @PostMapping("/add_product_to_cart")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> addProductToCart(@RequestBody AddProductToCartDto addProductToCartDto) {
-        return ResponseEntity.ok(marketService.addProductToCart(addProductToCartDto));
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<String> addProductToCart(@RequestBody AddProductToCartDto addProductToCartDto, @AuthenticationPrincipal Jwt jwt) {
+        AddProductToCartSecDto addProductToCartSecDto = new AddProductToCartSecDto(jwt.getClaimAsString("sub"),
+                addProductToCartDto.productId(), addProductToCartDto.quantity());
+        return ResponseEntity.ok(marketService.addProductToCart(addProductToCartSecDto));
     }
 
     @PutMapping("/remove_one_product_from_cart")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> removeOneProduct(@RequestBody RemoveProductFromCartDto removeProductFromCartDto) {
-        return ResponseEntity.ok(marketService.removeOneProduct(removeProductFromCartDto));
+    @PreAuthorize("hasRole('client_user') or hasRole('client_admin')")
+    public ResponseEntity<String> removeOneProduct(@RequestBody RemoveProductFromCartDto removeProductFromCartDto, @AuthenticationPrincipal Jwt jwt) {
+        RemoveProductFromCartSecDto removeProductFromCartSecDto = new RemoveProductFromCartSecDto(jwt.getClaimAsString("sub"),
+                removeProductFromCartDto.productId());
+        return ResponseEntity.ok(marketService.removeOneProduct(removeProductFromCartSecDto));
     }
 
     @PostMapping("/remove_product_from_cart")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> removeProduct(@RequestBody RemoveProductFromCartDto removeProductFromCartDto) {
-        return ResponseEntity.ok(marketService.removeProduct(removeProductFromCartDto));
+    @PreAuthorize("hasRole('client_user') or hasRole('client_admin')")
+    public ResponseEntity<String> removeProduct(@RequestBody RemoveProductFromCartDto removeProductFromCartDto, @AuthenticationPrincipal Jwt jwt) {
+        RemoveProductFromCartSecDto removeProductFromCartSecDto = new RemoveProductFromCartSecDto(jwt.getClaimAsString("sub"),
+                removeProductFromCartDto.productId());
+        return ResponseEntity.ok(marketService.removeProduct(removeProductFromCartSecDto));
     }
 
-    @GetMapping("/get_cart_total/{userId}")
+    @GetMapping("/get_cart_total")
     @ResponseStatus(HttpStatus.OK)
-    public Float getCartTotal(@PathVariable("userId") String userId) {
+    @PreAuthorize("hasRole('client_user')")
+    public Float getCartTotal(@AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getClaimAsString("sub");
         return marketService.getCartTotal(userId);
     }
 
     @PostMapping("/make_order")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> makeOrder(@RequestBody OrderDto orderDto) {
+    @PreAuthorize("hasRole('client_user')")
+    public ResponseEntity<String> makeOrder(@AuthenticationPrincipal Jwt jwt) {
+        OrderDto orderDto = new OrderDto(jwt.getClaimAsString("sub"));
         return ResponseEntity.ok(marketService.makeOrder(orderDto));
     }
 
-    @GetMapping("/get_orders_history/{userId}")
+    @GetMapping("/get_orders_history")
     @ResponseStatus(HttpStatus.OK)
-    public List<OrderHistoryDto> getOrdersHistory(@PathVariable("userId") String userId) {
+    @PreAuthorize("hasRole('client_user')")
+    public List<OrderHistoryDto> getOrdersHistory(@AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getClaimAsString("sub");
         return marketService.getOrdersHistory(userId);
     }
 }
