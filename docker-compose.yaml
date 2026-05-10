@@ -36,6 +36,9 @@ services:
       POSTGRES_DB: marketdb
       POSTGRES_USER: marketdb
       POSTGRES_PASSWORD: market123
+    deploy:
+      placement:
+        constraints: [ node.role == manager ]
     volumes:
       - marketdb_data:/var/lib/postgresql/data
     networks:
@@ -48,6 +51,9 @@ services:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: keycloak
+    deploy:
+      placement:
+        constraints: [ node.role == manager ]
     volumes:
       - keycloakdb_data:/var/lib/postgresql/data
     networks:
@@ -74,6 +80,9 @@ services:
       KC_HTTP_ENABLED: 'true'
       KC_HOSTNAME_STRICT_HTTPS: 'false'
       KC_HEALTH_ENABLED: 'true'
+    deploy:
+      placement:
+        constraints: [ node.role == manager ]
     volumes:
       - ./realm-export.json:/opt/keycloak/data/import/realm.json
     depends_on:
@@ -88,6 +97,9 @@ services:
       - target: 8080
         published: 8085
         mode: host
+    deploy:
+      placement:
+        constraints: [ node.role == manager ]
     networks:
       - adminer_db_net
       - internal_net
@@ -108,6 +120,9 @@ services:
       - target: 9000
         published: 9000
         mode: host
+    deploy:
+      placement:
+        constraints: [ node.role == manager ]
     networks:
       - internal_net
     
@@ -139,6 +154,7 @@ services:
 
   user-service:
     image: user_service_image
+    #    image: daria16/user-service
     build:
       context: ./user-service
       dockerfile: Dockerfile
@@ -155,6 +171,9 @@ services:
       - KEYCLOAK_JWK=http://keycloak:8080/realms/marketplace-realm/protocol/openid-connect/certs
       - JWT_RESOURCE_ID=marketplace-client
       - JWT_PRINCIPLE_ATTR=sub
+    deploy:
+      placement:
+        constraints: [ node.role == manager ]
     networks:
       - internal_net
       - backend_net
@@ -162,6 +181,7 @@ services:
       - keycloak_net
 
   market-service:
+#    image: daria16/market-service
     image: market_service_image
     build:
       context: ./market-service
@@ -175,12 +195,17 @@ services:
       - KEYCLOAK_JWK=http://keycloak:8080/realms/marketplace-realm/protocol/openid-connect/certs
       - JWT_RESOURCE_ID=marketplace-client
       - JWT_PRINCIPLE_ATTR=sub
+    deploy:
+#      replicas: 2
+      placement:
+        constraints: [ node.role == manager ]
     networks:
       - internal_net
       - backend_net
       - database_net
 
   io-service:
+#    image: daria16/io-service
     image: io_service_image
     build:
       context: ./io-service
@@ -190,6 +215,9 @@ services:
       - DB_PASS=market123
       - DB_URL=jdbc:postgresql://marketdb:5432/marketdb
       - DB_USER=marketdb
+    deploy:
+      placement:
+        constraints: [ node.role == manager ]
     networks:
       - database_net
       - backend_net
@@ -202,11 +230,16 @@ volumes:
 networks:
   backend_net:
     driver: overlay
+    attachable: true
   internal_net:
     driver: overlay
+    attachable: true
   database_net:
     driver: overlay
+    attachable: true
   adminer_db_net:
     driver: overlay
+    attachable: true
   keycloak_net:
     driver: overlay
+    attachable: true

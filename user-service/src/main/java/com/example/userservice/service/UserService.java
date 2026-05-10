@@ -1,11 +1,11 @@
 package com.example.userservice.service;
 
+import com.example.userservice.dto.UserDTOs.AddUserDto;
 import com.example.userservice.dto.UserDTOs.UserDTO;
 import com.example.userservice.dto.UserDTOs.UserUpdateDTO;
 import com.example.userservice.feignClient.IOClient;
 import com.example.userservice.model.Role;
 import com.example.userservice.model.UserModel;
-import com.example.userservice.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,17 +17,17 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
-    private final UserRepository userRepository;
     private final IOClient ioClient;
 
     @Transactional
     public void addUser(String keycloakId, String username, String email, String firstName, String lastName, String role) {
-        if (userRepository.existsByKeycloakId(keycloakId)) {
+        if (ioClient.checkIfUserExists(keycloakId)) {
             log.info("User {} already exists in database. Skipping sync.", username);
             return;
         }
@@ -38,22 +38,16 @@ public class UserService {
         else if (role != null && role.toUpperCase().contains("SELLER"))
             mappedRole = Role.SELLER;
 
-        UserModel userModel = UserModel.builder()
-                        .keycloakId(keycloakId)
-                        .email(email)
-                        .username(username)
-                        .role(mappedRole)
-                        .firstName(firstName)
-                        .lastName(lastName)
-                        .build();
 
-        userRepository.save(userModel);
+        AddUserDto dto = new AddUserDto(keycloakId, email, username, mappedRole,
+                firstName, lastName);
+        ioClient.addUser(dto);
         log.info("Synced new user: {} (ID: {})", username, keycloakId);
     }
 
     public Collection<? extends GrantedAuthority> setRoles(String keycloakId) {
-        return userRepository
-                .findByKeycloakId(keycloakId)
+        Optional<UserModel> userModel = ioClient.findUserByKeycloakId(keycloakId);
+        return userModel
                 .map(user -> List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())))
                 .orElse(List.of());
     }
@@ -61,7 +55,7 @@ public class UserService {
     @Transactional
     public void deleteUsersTable() {
         log.warn("Deleting all the users from the database");
-        userRepository.deleteAll();
+        ioClient.deleteUsersTable();
     }
 
     @Transactional

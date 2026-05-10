@@ -16,7 +16,7 @@ import java.util.List;
 @FeignClient(name = "io-service", url = "http://io-service:8080/internal/io")
 public interface IOClient {
     @PostMapping("/add_product")
-    ProductDto addProduct(@RequestBody ProductDto productDto);
+    ProductDto addProduct(@RequestBody ProductSecDto productDto);
 
     @GetMapping("/see_all_products")
     List<ProductDto> seeAllProducts();
@@ -70,13 +70,13 @@ public interface IOClient {
     void deleteReview(@PathVariable("id") Long id, @RequestParam("keycloakId") String keycloakId);
 
     @PostMapping("/add_product_to_cart")
-    String addProductToCart(@RequestBody AddProductToCartDto addProductToCartDto);
+    String addProductToCart(@RequestBody AddProductToCartSecDto addProductToCartSecDto);
 
     @PutMapping("/remove_one_product_from_cart")
-    String removeOneProduct(@RequestBody RemoveProductFromCartDto removeProductFromCartDto);
+    String removeOneProduct(@RequestBody RemoveProductFromCartSecDto removeProductFromCartSecDto);
 
     @PostMapping("/remove_product_from_cart")
-    String removeProduct(RemoveProductFromCartDto removeProductFromCartDto);
+    String removeProduct(RemoveProductFromCartSecDto removeProductFromCartSecDto);
 
     @GetMapping("/get_cart_total/{userId}")
     Float getCartTotal(@PathVariable("userId") String userId);

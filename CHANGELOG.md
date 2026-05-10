@@ -7,6 +7,13 @@
 - Add Prometheus and Grafana
 - Add Grafana Dashboard Export
 
+### @daria-tanasie
+
+- Updated README
+- Added roles for endpoints
+- Updated methods for user-service
+- Configured Swarm Cluster
+
 ## 0.0.7 - 2026-05-09
 
 ### @alex2004-l
@@ -16,7 +23,6 @@
 - Improve search - search by field + allow ordering
 - Add keycloak authorization in market-service
 - Integrate keycloak authorization for review, wishlist, user update and update/delete product
-- Integrate Prometheus and Grafana
 
 ## 0.0.6 - 2026-05-07
 
