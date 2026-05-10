@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.8 - 2026-05-10
+
+### @daria-tanasie
+
+- Updated README
+- Added roles for endpoints
+- Updated methods for user-service
+- Configured Swarm Cluster
+
 ## 0.0.7 - 2026-05-07
 
 ### @alex2004-l

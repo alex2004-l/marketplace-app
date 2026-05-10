@@ -3,6 +3,7 @@ package com.example.ioservice.service;
 import com.example.ioservice.dto.*;
 import com.example.ioservice.dto.ReviewDTOs.ReviewAddDTO;
 import com.example.ioservice.dto.ReviewDTOs.ReviewDTO;
+import com.example.ioservice.dto.UserDTOs.AddUserDto;
 import com.example.ioservice.dto.UserDTOs.UserDTO;
 import com.example.ioservice.dto.UserDTOs.UserUpdateDTO;
 import com.example.ioservice.dto.WishlistDTOs.WishlistAddDTO;
@@ -35,13 +36,15 @@ public class IOService {
     private final WishlistItemRepository wishlistItemRepository;
     private final ReviewRepository       reviewRepository;
 
-    public ProductDto addProduct(ProductDto productDto) {
+    public ProductDto addProduct(ProductSecDto productDto) {
+        UserModel userModel = userRepository.findByKeycloakId(productDto.keycloakId())
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
         ProductModel productModel = ProductModel.builder()
                 .productId(productDto.productId())
                 .productName(productDto.productName())
                 .price(productDto.price())
                 .description(productDto.description())
-                .sellerId(productDto.sellerId())
+                .sellerId(userModel.getUserId())
                 .quantity(productDto.quantity())
                 .build();
         productRepository.save(productModel);
@@ -126,10 +129,12 @@ public class IOService {
     }
 
     public String addProductToCart(AddProductToCartDto addProductToCartDto) {
-        CartModel cart = cartRepository.findByUserIdAndStatus(addProductToCartDto.userId(), "inProgress")
+        UserModel userModel = userRepository.findByKeycloakId(addProductToCartDto.keycloakId())
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+        CartModel cart = cartRepository.findByUserIdAndStatus(userModel.getUserId(), "inProgress")
                 .orElseGet(() -> {
                    CartModel newCart = new CartModel();
-                   newCart.setUserId(addProductToCartDto.userId());
+                   newCart.setUserId(userModel.getUserId());
                    newCart.setStatus("inProgress");
                    return cartRepository.save(newCart);
                 });
@@ -163,7 +168,9 @@ public class IOService {
     }
 
     public String removeOneProduct(RemoveProductFromCartDto dto) {
-        CartModel cartModel = cartRepository.findByUserIdAndStatus(dto.userId(), "inProgress")
+        UserModel userModel = userRepository.findByKeycloakId(dto.keycloakId())
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+        CartModel cartModel = cartRepository.findByUserIdAndStatus(userModel.getUserId(), "inProgress")
                 .orElseThrow(() -> new RuntimeException("Cart doesn't exist!"));
         CartProductModel cartProductModel = cartProductRepository.findByCartIdAndProductId(cartModel.getCartId(),
                 dto.productId()).orElseThrow(() -> new RuntimeException("Product doesn't exist!"));
@@ -178,15 +185,19 @@ public class IOService {
     }
 
     public String removeProduct(RemoveProductFromCartDto dto) {
-        CartModel cartModel = cartRepository.findByUserIdAndStatus(dto.userId(), "inProgress")
+        UserModel userModel = userRepository.findByKeycloakId(dto.keycloakId())
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+        CartModel cartModel = cartRepository.findByUserIdAndStatus(userModel.getUserId(), "inProgress")
                 .orElseThrow(() -> new RuntimeException("Cart doesn't exist!"));
         cartProductRepository.deleteByCartIdAndProductId(cartModel.getCartId(), dto.productId());
 
         return "Product removed from cart!";
     }
 
-    public Float getCartTotal(Long userId) {
-        CartModel cartModel = cartRepository.findByUserIdAndStatus(userId, "inProgress")
+    public Float getCartTotal(String userId) {
+        UserModel userModel = userRepository.findByKeycloakId(userId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+        CartModel cartModel = cartRepository.findByUserIdAndStatus(userModel.getUserId(), "inProgress")
                 .orElseThrow(() -> new RuntimeException("Cart doesn't exist!"));
         List<CartProductModel> products = cartProductRepository.findAllByCartId(cartModel.getCartId());
 
@@ -212,15 +223,17 @@ public class IOService {
     }
 
     @Transactional
-    public String makeOrder(Long userId) {
-        CartModel cartModel = cartRepository.findByUserIdAndStatus(userId, "inProgress")
+    public String makeOrder(String userId) {
+        UserModel userModel = userRepository.findByKeycloakId(userId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+        CartModel cartModel = cartRepository.findByUserIdAndStatus(userModel.getUserId(), "inProgress")
                 .orElseThrow(() -> new RuntimeException("Cart doesn't exist!"));
 
         OrderModel orderModel = OrderModel.builder()
                 .cartId(cartModel.getCartId())
                 .price(getCartTotal(userId))
                 .status("inProgress")
-                .userId(userId)
+                .userId(userModel.getUserId())
                 .build();
         orderRepository.save(orderModel);
         boolean paymentDone = orderPayment(orderModel);
@@ -264,8 +277,10 @@ public class IOService {
         }
     }
 
-    public List<OrderHistoryDto> getOrdersHistory(Long userId) {
-        List<OrderModel> orders = orderRepository.findAllByUserId(userId);
+    public List<OrderHistoryDto> getOrdersHistory(String userId) {
+        UserModel userModel = userRepository.findByKeycloakId(userId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+        List<OrderModel> orders = orderRepository.findAllByUserId(userModel.getUserId());
         List<OrderHistoryDto> history = new ArrayList<>();
         for (OrderModel order : orders) {
             OrderHistoryDto orderHistoryDto = new OrderHistoryDto(order.getOrderId(), order.getPrice(),
@@ -569,5 +584,32 @@ public class IOService {
                 userModel.getEmail(),
                 userModel.getAddress(),
                 userModel.getPhone());
+    }
+
+    public Boolean checkIfUserExists(String keycloakId) {
+        return userRepository.existsByKeycloakId(keycloakId);
+    }
+
+    @Transactional
+    public void addUser(AddUserDto dto) {
+        UserModel userModel = UserModel.builder()
+                .keycloakId(dto.keycloakId())
+                .username(dto.username())
+                .email(dto.email())
+                .role(dto.role())
+                .firstName(dto.firstName())
+                .lastName(dto.lastName())
+                .build();
+
+        userRepository.save(userModel);
+    }
+
+    public Optional<UserModel> findUserByKeycloakId(String keycloakId) {
+        return userRepository.findByKeycloakId(keycloakId);
+    }
+
+    @Transactional
+    public void deleteUsersTable() {
+        userRepository.deleteAll();
     }
 }
