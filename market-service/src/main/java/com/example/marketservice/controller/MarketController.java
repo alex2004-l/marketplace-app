@@ -24,12 +24,13 @@ public class MarketController {
 
     @GetMapping("/test_market")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('client_user') or hasRole('client_admin') or hasRole('client_seller')")
     public ResponseEntity<String> startCheck() {
         return ResponseEntity.ok("Market service working");
     }
 
     @PostMapping("/add_product")
-    @PreAuthorize("hasRole('client_seller')")
+    @PreAuthorize("hasRole('client_seller') or hasRole('client_admin')")
     public ResponseEntity<ProductDto> addProduct(@RequestBody ProductDto productDto, @AuthenticationPrincipal Jwt jwt) {
         ProductSecDto productSecDto = new ProductSecDto(productDto.productId(), productDto.productName(), productDto.price(),
                 productDto.description(), jwt.getClaimAsString("sub"), productDto.quantity());
