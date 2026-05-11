@@ -125,6 +125,32 @@ services:
         constraints: [ node.role == manager ]
     networks:
       - internal_net
+    
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - target: 9090
+        published: 9091
+        mode: host
+    networks:
+      - backend_net
+      - internal_net
+
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+    - ./grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - target: 3000
+        published: 9092
+        mode: host
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - backend_net
+      - internal_net
 
   user-service:
     image: user_service_image

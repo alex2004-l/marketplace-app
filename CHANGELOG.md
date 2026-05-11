@@ -2,6 +2,11 @@
 
 ## 0.0.8 - 2026-05-10
 
+### @alex2004-l
+
+- Add Prometheus and Grafana
+- Add Grafana Dashboard Export
+
 ### @daria-tanasie
 
 - Updated README
@@ -9,7 +14,7 @@
 - Updated methods for user-service
 - Configured Swarm Cluster
 
-## 0.0.7 - 2026-05-07
+## 0.0.7 - 2026-05-09
 
 ### @alex2004-l
 
