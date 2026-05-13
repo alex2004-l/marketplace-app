@@ -6,7 +6,6 @@ import com.example.userservice.dto.UserDTOs.UserUpdateDTO;
 import com.example.userservice.feignClient.IOClient;
 import com.example.userservice.model.Role;
 import com.example.userservice.model.UserModel;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,7 +24,6 @@ import java.util.Optional;
 public class UserService {
     private final IOClient ioClient;
 
-    @Transactional
     public void addUser(String keycloakId, String username, String email, String firstName, String lastName, String role) {
         if (ioClient.checkIfUserExists(keycloakId)) {
             log.info("User {} already exists in database. Skipping sync.", username);
@@ -52,13 +50,11 @@ public class UserService {
                 .orElse(List.of());
     }
 
-    @Transactional
     public void deleteUsersTable() {
         log.warn("Deleting all the users from the database");
         ioClient.deleteUsersTable();
     }
 
-    @Transactional
     public ResponseEntity<?> updateUserData(UserUpdateDTO userUpdateDTO, String keycloakSub) {
         try {
             return ResponseEntity.ok(ioClient.updateUserData(userUpdateDTO, keycloakSub));

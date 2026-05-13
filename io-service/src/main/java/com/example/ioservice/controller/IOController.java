@@ -146,6 +146,11 @@ public class IOController {
         return ioService.getOrdersHistory(userId);
     }
 
+    @GetMapping("/get_cart/{userId}")
+    public CartDto getCartProducts(@PathVariable String userId) {
+        return ioService.getCartProducts(userId);
+    }
+
     @PostMapping("/user/update")
     public UserDTO updateUserData(@RequestBody UserUpdateDTO userDTO, @RequestParam("keycloakId") String keycloakId) {
         return ioService.updateUserData(userDTO, keycloakId);

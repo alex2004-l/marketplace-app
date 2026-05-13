@@ -194,4 +194,12 @@ public class MarketController {
         String userId = jwt.getClaimAsString("sub");
         return marketService.getOrdersHistory(userId);
     }
+
+    @GetMapping("/get_cart")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('client_user')")
+    public CartDto getCartProducts(@AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getClaimAsString("sub");
+        return marketService.getCartProducts(userId);
+    }
 }

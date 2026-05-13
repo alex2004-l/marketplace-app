@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.9 - 2026-05-13
+
+### @daria-tanasie
+
+- Add Prometheus and Grafana to cluster
+- Added method to see the products from cart
+- Modified user-service pom.xml and application.properties
+
 ## 0.0.8 - 2026-05-10
 
 ### @alex2004-l

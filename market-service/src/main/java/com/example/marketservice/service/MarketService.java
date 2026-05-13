@@ -199,4 +199,7 @@ public class MarketService {
     public List<OrderHistoryDto> getOrdersHistory(String userId) {
         return ioClient.getOrdersHistory(userId);
     }
+    public CartDto getCartProducts(String userId) {
+        return ioClient.getCartProducts(userId);
+    }
 }
