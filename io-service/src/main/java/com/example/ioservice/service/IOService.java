@@ -229,6 +229,11 @@ public class IOService {
         CartModel cartModel = cartRepository.findByUserIdAndStatus(userModel.getUserId(), "inProgress")
                 .orElseThrow(() -> new RuntimeException("Cart doesn't exist!"));
 
+        Float cartTotal = getCartTotal(userId);
+        if (cartTotal <= 0.0) {
+            return "No products in cart!";
+        }
+
         OrderModel orderModel = OrderModel.builder()
                 .cartId(cartModel.getCartId())
                 .price(getCartTotal(userId))
@@ -274,6 +279,29 @@ public class IOService {
             } else {
                 productRepository.save(product);
             }
+        }
+    }
+
+    public CartDto getCartProducts(String userId) {
+        UserModel userModel = userRepository.findByKeycloakId(userId)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+        Optional<CartModel> cartModel = cartRepository.findByUserIdAndStatus(userModel.getUserId(), "inProgress");
+
+        if (cartModel.isPresent()) {
+            List<OrderedProductDto> orderedProductDtos = new ArrayList<>();
+            List<CartProductModel> products = cartProductRepository.findAllByCartId(cartModel.get().getCartId());
+            for (CartProductModel p : products) {
+                Optional<ProductModel> optProductModel = productRepository.findById(p.getProductId());
+                if (optProductModel.isPresent()) {
+                    ProductModel productModel = optProductModel.get();
+                    OrderedProductDto orderedProductDto = new OrderedProductDto(productModel.getProductId(),
+                            productModel.getProductName(), productModel.getPrice(), p.getQuantity());
+                    orderedProductDtos.add(orderedProductDto);
+                }
+            }
+            return new CartDto(getCartTotal(userId), orderedProductDtos);
+        } else {
+            return new CartDto(0.0F, List.of());
         }
     }
 

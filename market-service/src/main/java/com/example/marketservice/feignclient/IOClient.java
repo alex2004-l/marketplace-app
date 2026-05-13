@@ -86,4 +86,7 @@ public interface IOClient {
 
     @GetMapping("/get_orders_history/{userId}")
     List<OrderHistoryDto> getOrdersHistory(@PathVariable String userId);
+
+    @GetMapping("/get_cart/{userId}")
+    CartDto getCartProducts(@PathVariable String userId);
 }

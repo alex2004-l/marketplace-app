@@ -83,8 +83,9 @@ services:
     deploy:
       placement:
         constraints: [ node.role == manager ]
-    volumes:
-      - ./realm-export.json:/opt/keycloak/data/import/realm.json
+    configs:
+      - source: keycloak_config
+        target: /opt/keycloak/data/import/realm.json
     depends_on:
       - keycloakdb
     networks:
@@ -128,12 +129,16 @@ services:
     
   prometheus:
     image: prom/prometheus:latest
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    configs:
+      - source: prometheus_config
+        target: /etc/prometheus/prometheus.yml
     ports:
       - target: 9090
         published: 9091
         mode: host
+    deploy:
+      placement:
+        constraints: [ node.role == worker ]
     networks:
       - backend_net
       - internal_net
@@ -148,32 +153,31 @@ services:
         mode: host
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+    deploy:
+      placement:
+        constraints: [ node.role == manager ]
     networks:
       - backend_net
       - internal_net
 
   user-service:
-    image: user_service_image
-    #    image: daria16/user-service
-    build:
-      context: ./user-service
-      dockerfile: Dockerfile
+    image: alex2004l/user-service
+#    image: user_service_image
+#    build:
+#      context: ./user-service
+#      dockerfile: Dockerfile
     ports:
       - target: 8080
         published: 8090
         mode: host
     environment:
-      - DB_HOSTNAME=marketdb
-      - DB_PASS=market123
-      - DB_URL=jdbc:postgresql://marketdb:5432/marketdb
-      - DB_USER=marketdb
       - KEYCLOAK_ISSUER=http://localhost:9090/realms/marketplace-realm # For now for local testing
       - KEYCLOAK_JWK=http://keycloak:8080/realms/marketplace-realm/protocol/openid-connect/certs
       - JWT_RESOURCE_ID=marketplace-client
       - JWT_PRINCIPLE_ATTR=sub
     deploy:
       placement:
-        constraints: [ node.role == manager ]
+        constraints: [ node.role == worker ]
     networks:
       - internal_net
       - backend_net
@@ -181,11 +185,11 @@ services:
       - keycloak_net
 
   market-service:
-#    image: daria16/market-service
-    image: market_service_image
-    build:
-      context: ./market-service
-      dockerfile: Dockerfile
+    image: alex2004l/market-service
+#    image: market_service_image
+#    build:
+#      context: ./market-service
+#      dockerfile: Dockerfile
     ports:
       - target: 8080
         published: 8089
@@ -196,20 +200,20 @@ services:
       - JWT_RESOURCE_ID=marketplace-client
       - JWT_PRINCIPLE_ATTR=sub
     deploy:
-#      replicas: 2
+      replicas: 2
       placement:
-        constraints: [ node.role == manager ]
+        constraints: [ node.role == worker ]
     networks:
       - internal_net
       - backend_net
       - database_net
 
   io-service:
-#    image: daria16/io-service
-    image: io_service_image
-    build:
-      context: ./io-service
-      dockerfile: Dockerfile
+    image: alex2004l/io-service
+#    image: io_service_image
+#    build:
+#      context: ./io-service
+#      dockerfile: Dockerfile
     environment:
       - DB_HOSTNAME=marketdb
       - DB_PASS=market123
@@ -217,7 +221,7 @@ services:
       - DB_USER=marketdb
     deploy:
       placement:
-        constraints: [ node.role == manager ]
+        constraints: [ node.role == worker ]
     networks:
       - database_net
       - backend_net
@@ -243,3 +247,9 @@ networks:
   keycloak_net:
     driver: overlay
     attachable: true
+
+configs:
+  prometheus_config:
+    file: ./prometheus.yml
+  keycloak_config:
+    file: ./realm-export.json
