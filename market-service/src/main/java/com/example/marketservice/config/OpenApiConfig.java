@@ -16,6 +16,7 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
+                .addServersItem(new io.swagger.v3.oas.models.servers.Server().url("http://localhost:8000").description("Kong Gateway"))
                 .addSecurityItem(new SecurityRequirement().addList("Keycloak"))
                 .components(new Components()
                         .addSecuritySchemes("Keycloak", new SecurityScheme()

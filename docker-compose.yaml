@@ -13,7 +13,7 @@ services:
       KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
     ports:
       - target: 8000
-        published: 80
+        published: 8000
         mode: host
       - target: 8443
         published: 443
@@ -162,16 +162,12 @@ services:
 
   user-service:
     image: alex2004l/user-service
-#    image: user_service_image
-#    build:
-#      context: ./user-service
-#      dockerfile: Dockerfile
-    ports:
-      - target: 8080
-        published: 8090
-        mode: host
+    # image: user_service_image
+    # build:
+    #   context: ./user-service
+    #   dockerfile: Dockerfile
     environment:
-      - KEYCLOAK_ISSUER=http://localhost:9090/realms/marketplace-realm # For now for local testing
+      - KEYCLOAK_ISSUER=http://localhost:9090/realms/marketplace-realm
       - KEYCLOAK_JWK=http://keycloak:8080/realms/marketplace-realm/protocol/openid-connect/certs
       - JWT_RESOURCE_ID=marketplace-client
       - JWT_PRINCIPLE_ATTR=sub
@@ -186,16 +182,12 @@ services:
 
   market-service:
     image: alex2004l/market-service
-#    image: market_service_image
-#    build:
-#      context: ./market-service
-#      dockerfile: Dockerfile
-    ports:
-      - target: 8080
-        published: 8089
-        mode: host
+    # image: market_service_image
+    # build:
+    #   context: ./market-service
+    #   dockerfile: Dockerfile
     environment:
-      - KEYCLOAK_ISSUER=http://localhost:9090/realms/marketplace-realm # For now for local testing
+      - KEYCLOAK_ISSUER=http://localhost:9090/realms/marketplace-realm
       - KEYCLOAK_JWK=http://keycloak:8080/realms/marketplace-realm/protocol/openid-connect/certs
       - JWT_RESOURCE_ID=marketplace-client
       - JWT_PRINCIPLE_ATTR=sub
@@ -210,10 +202,10 @@ services:
 
   io-service:
     image: alex2004l/io-service
-#    image: io_service_image
-#    build:
-#      context: ./io-service
-#      dockerfile: Dockerfile
+    # image: io_service_image
+    # build:
+    #   context: ./io-service
+    #   dockerfile: Dockerfile
     environment:
       - DB_HOSTNAME=marketdb
       - DB_PASS=market123
@@ -225,6 +217,19 @@ services:
     networks:
       - database_net
       - backend_net
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui:latest
+    ports:
+      - target: 8080
+        published: 8081
+    environment:
+      URLS: "[
+        { url: 'http://localhost:8000/docs/market-service', name: 'Market Service' },
+        { url: 'http://localhost:8000/docs/user-service', name: 'User Service' }
+      ]"
+    networks:
+      - internal_net
 
 volumes:
   marketdb_data:
@@ -250,6 +255,6 @@ networks:
 
 configs:
   prometheus_config:
-    file: ./prometheus.yml
+    file: ./prometheus/prometheus.yml
   keycloak_config:
-    file: ./realm-export.json
+    file: ./keycloak/realm-export.json
