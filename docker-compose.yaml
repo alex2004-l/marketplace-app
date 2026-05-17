@@ -146,7 +146,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     volumes:
-    - ./grafana/dashboards:/var/lib/grafana/dashboards
+    - grafana-volume:/var/lib/grafana
     ports:
       - target: 3000
         published: 9092
@@ -162,30 +162,6 @@ services:
 
   user-service:
     image: alex2004l/user-service
-    # image: user_service_image
-    # build:
-    #   context: ./user-service
-    #   dockerfile: Dockerfile
-    environment:
-      - KEYCLOAK_ISSUER=http://localhost:9090/realms/marketplace-realm
-      - KEYCLOAK_JWK=http://keycloak:8080/realms/marketplace-realm/protocol/openid-connect/certs
-      - JWT_RESOURCE_ID=marketplace-client
-      - JWT_PRINCIPLE_ATTR=sub
-    deploy:
-      placement:
-        constraints: [ node.role == worker ]
-    networks:
-      - internal_net
-      - backend_net
-      - database_net
-      - keycloak_net
-
-  market-service:
-    image: alex2004l/market-service
-    # image: market_service_image
-    # build:
-    #   context: ./market-service
-    #   dockerfile: Dockerfile
     environment:
       - KEYCLOAK_ISSUER=http://localhost:9090/realms/marketplace-realm
       - KEYCLOAK_JWK=http://keycloak:8080/realms/marketplace-realm/protocol/openid-connect/certs
@@ -195,6 +171,35 @@ services:
       replicas: 2
       placement:
         constraints: [ node.role == worker ]
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    networks:
+      - internal_net
+      - backend_net
+      - database_net
+      - keycloak_net
+
+  market-service:
+    image: alex2004l/market-service
+    environment:
+      - KEYCLOAK_ISSUER=http://localhost:9090/realms/marketplace-realm
+      - KEYCLOAK_JWK=http://keycloak:8080/realms/marketplace-realm/protocol/openid-connect/certs
+      - JWT_RESOURCE_ID=marketplace-client
+      - JWT_PRINCIPLE_ATTR=sub
+    deploy:
+      replicas: 2
+      placement:
+        constraints: [ node.role == worker ]
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
     networks:
       - internal_net
       - backend_net
@@ -202,10 +207,6 @@ services:
 
   io-service:
     image: alex2004l/io-service
-    # image: io_service_image
-    # build:
-    #   context: ./io-service
-    #   dockerfile: Dockerfile
     environment:
       - DB_HOSTNAME=marketdb
       - DB_PASS=market123
@@ -214,31 +215,21 @@ services:
     deploy:
       placement:
         constraints: [ node.role == worker ]
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
     networks:
       - database_net
       - backend_net
-
-  swagger-ui:
-    image: swaggerapi/swagger-ui:latest
-    ports:
-      - target: 8080
-        published: 8081
-        mode: host
-    environment:
-      URLS: "[
-        { url: 'http://localhost:8000/docs/market-service', name: 'Market Service' },
-        { url: 'http://localhost:8000/docs/user-service', name: 'User Service' }
-      ]"
-    deploy:
-      placement:
-        constraints: [ node.role == manager ]
-    networks:
-      - internal_net
 
 volumes:
   marketdb_data:
   keycloakdb_data:
   portainer_data:
+  grafana-volume:
 
 networks:
   backend_net:
