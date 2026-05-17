@@ -6,8 +6,25 @@
 A microservices-driven Marketplace application built with Spring Boot and Docker.
 
 #### Team members:
-- Daria Tănasie 342C1 - @daria-tanasie
-- Lache Alexandra 342C1 - @alex2004-l
+- Daria Tănasie    342C1 - @daria-tanasie
+- Alexandra Lache  342C1 - @alex2004-l
+
+## Features implemented:
+- Authenticate a user through Keycloak
+- Add/Edit/Delete products (by sellers)
+- See the products available
+- Search for products (by name)
+- Sort products ascending/descending
+- Create/Delete wishlist
+- Add products to wishlist
+- Add products to cart
+- Delete products from cart
+- Create an order with the current products in the cart
+- Get the cart total cost
+- Modify address/phone number
+- Payment simulation for the order
+- See the orders history
+- Add/Delete reviews for products
 
 
 ## Build
@@ -49,20 +66,3 @@ Workers join manager:
 ```bash
 for i in 1 2; do docker exec worker-$i docker swarm join --advertise-addr 10.20.0.$((i+1)) --token $JOIN_TOKEN 10.20.0.1:2377; done
 ```
-
-## Features implemented:
-- Authenticate a user through Keycloak
-- Add new products (by sellers)
-- See the products available
-- Search for products (by name)
-- Sort products ascending/descending
-- Edit/delete a product
-- Add products to wishlist
-- Add products to cart
-- Delete products from cart
-- Create an order with the current products in the cart
-- Get the cart total cost
-- Modify address/phone number
-- Payment simulation for the order
-- See the orders history
-- Add ratings and reviews for products
