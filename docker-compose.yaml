@@ -223,11 +223,15 @@ services:
     ports:
       - target: 8080
         published: 8081
+        mode: host
     environment:
       URLS: "[
         { url: 'http://localhost:8000/docs/market-service', name: 'Market Service' },
         { url: 'http://localhost:8000/docs/user-service', name: 'User Service' }
       ]"
+    deploy:
+      placement:
+        constraints: [ node.role == manager ]
     networks:
       - internal_net
 
